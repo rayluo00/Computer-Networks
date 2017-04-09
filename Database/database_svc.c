@@ -20,7 +20,7 @@ static void
 database_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 {
 	union {
-		int db_create_1_arg;
+		int db_option_1_arg;
 	} argument;
 	char *result;
 	xdrproc_t _xdr_argument, _xdr_result;
@@ -31,10 +31,16 @@ database_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		(void) svc_sendreply (transp, (xdrproc_t) xdr_void, (char *)NULL);
 		return;
 
-	case DB_CREATE:
+	case DB_START:
+		_xdr_argument = (xdrproc_t) xdr_void;
+		_xdr_result = (xdrproc_t) xdr_int;
+		local = (char *(*)(char *, struct svc_req *)) db_start_1_svc;
+		break;
+
+	case DB_OPTION:
 		_xdr_argument = (xdrproc_t) xdr_int;
 		_xdr_result = (xdrproc_t) xdr_int;
-		local = (char *(*)(char *, struct svc_req *)) db_create_1_svc;
+		local = (char *(*)(char *, struct svc_req *)) db_option_1_svc;
 		break;
 
 	default:

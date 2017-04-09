@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -g -Wall
-CLNT_OBJS = db_ccmd.o
-SVR_OBJS = db_scmd.o
+CLNT_OBJS = db_ccmd.o database_clnt.o rpc_calls.o
+SVR_OBJS = db_scmd.o database_svc.o db_server.o
 
 all: $(CLNT_OBJS) $(SVR_OBJS)
 	$(CC) $(CFLAGS) -lc -o clnt $(CLNT_OBJS)
