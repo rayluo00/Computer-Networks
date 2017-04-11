@@ -42,3 +42,8 @@ int db_open (struct db_args args)
 
 	return 0;
 }
+
+void db_close () {
+	gdbm_close(DATABASE);
+	DATABASE = NULL:
+}

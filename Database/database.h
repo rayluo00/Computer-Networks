@@ -33,6 +33,9 @@ extern  int * db_create_1_svc(struct db_args *, struct svc_req *);
 #define DB_OPEN 3
 extern  int * db_open_1(struct db_args *, CLIENT *);
 extern  int * db_open_1_svc(struct db_args *, struct svc_req *);
+#define DB_CLOSE 4
+extern  int * db_close_1(void *, CLIENT *);
+extern  int * db_close_1_svc(void *, struct svc_req *);
 extern int database_prog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 
 #else /* K&R C */
@@ -45,6 +48,9 @@ extern  int * db_create_1_svc();
 #define DB_OPEN 3
 extern  int * db_open_1();
 extern  int * db_open_1_svc();
+#define DB_CLOSE 4
+extern  int * db_close_1();
+extern  int * db_close_1_svc();
 extern int database_prog_1_freeresult ();
 #endif /* K&R C */
 

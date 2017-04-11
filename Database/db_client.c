@@ -171,6 +171,15 @@ int get_cmd (int clientID)
 		args = fill_db_struct(cmd);
 		db_open(args);
 	}
+	else if (!strncmp(cmd[0], "close", 5)) {
+		//TODO: Finish close
+	}
+	else if (!strncmp(cmd[0], "put", 3)) {
+		//TODO: Finish put
+	}
+	else if (!strncmp(cmd[0], "get", 3)) {
+		//TODO: FInish get
+	}
 
 	free(cmd);
 	return 0;	
