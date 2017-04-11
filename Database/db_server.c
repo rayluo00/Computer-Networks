@@ -25,5 +25,6 @@ int db_start ()
 
 int db_create (struct db_args args)
 {
+	printf("DBTYPE: %d | DBNAME: %s\n", args.DB_TYPE, args.DB_NAME);
 	return 0;
 }

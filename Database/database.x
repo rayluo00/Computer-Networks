@@ -1,6 +1,6 @@
 struct db_args {
 	int DB_TYPE;
-	char *DB_NAME;
+	string DB_NAME<>;
 };
 
 program DATABASE_PROG {

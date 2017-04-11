@@ -12,7 +12,7 @@ xdr_db_args (XDR *xdrs, db_args *objp)
 
 	 if (!xdr_int (xdrs, &objp->DB_TYPE))
 		 return FALSE;
-	 if (!xdr_pointer (xdrs, (char **)&objp->DB_NAME, sizeof (char), (xdrproc_t) xdr_char))
+	 if (!xdr_string (xdrs, &objp->DB_NAME, ~0))
 		 return FALSE;
 	return TRUE;
 }

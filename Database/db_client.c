@@ -23,6 +23,7 @@ int encode(int clientID, int option);
 ret_val decode(int code);
 int get_cmd(int clientID);
 int get_status(ret_val ret);
+int create_database(char **cmd);
 
 /* Server procedures */
 int db_start();
@@ -110,6 +111,32 @@ char **parse_args (char *line)
 	return cmd;
 }
 
+int create_database (char **cmd)
+{
+	struct db_args args;
+	int dbType;
+	char *dbName;
+
+	dbType = atoi(cmd[1]);
+
+	if (dbType == 0 && cmd[1] != "0") {
+		dbType = -1;
+		dbName = cmd[1];
+	} 
+	else if (cmd[2] != NULL) {
+		dbName = cmd[2];
+	}
+
+	args.DB_TYPE = dbType;
+	args.DB_NAME = dbName;
+
+	printf("DB NAME: %s\n", args.DB_NAME);
+
+	db_create(args);
+
+	return 0;
+}
+
 int get_cmd (int clientID)
 {
     char buffer[1024];
@@ -131,10 +158,16 @@ int get_cmd (int clientID)
 
 	cmd = parse_args(buffer);
 
+	/*
 	int x = 0;	
 	while (cmd[x] != NULL) {
 		printf("CMD[%d] : %s\n", x, cmd[x]);
 		x++;
+	}
+	*/
+
+	if (!strncmp(cmd[0], "mk", 2)) {
+		create_database(cmd);
 	}
 
 	free(cmd);
@@ -197,8 +230,9 @@ int main (int argc, char **argv)
 
     while (online) {
         while (status > -1) {
-            ret = decode(get_cmd(clientID));
-            status = get_status(ret);
+            get_cmd(clientID);
+			//ret = decode(get_cmd(clientID));
+            //status = get_status(ret);
         }
     }
 
