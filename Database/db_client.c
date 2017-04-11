@@ -111,7 +111,7 @@ char **parse_args (char *line)
 	return cmd;
 }
 
-int create_database (char **cmd)
+struct db_args fill_db_struct (char **cmd)
 {
 	struct db_args args;
 	int dbType;
@@ -130,11 +130,7 @@ int create_database (char **cmd)
 	args.DB_TYPE = dbType;
 	args.DB_NAME = dbName;
 
-	printf("DB NAME: %s\n", args.DB_NAME);
-
-	db_create(args);
-
-	return 0;
+	return args;
 }
 
 int get_cmd (int clientID)
@@ -143,6 +139,7 @@ int get_cmd (int clientID)
 	char *input;
 	char **cmd;
 	//int code;
+	struct db_args args;
 
     do {
         printf("$ ");
@@ -167,7 +164,12 @@ int get_cmd (int clientID)
 	*/
 
 	if (!strncmp(cmd[0], "mk", 2)) {
-		create_database(cmd);
+		args = fill_db_struct(cmd);
+		db_create(args);
+	}
+	else if (!strncmp(cmd[0], "open", 4)) {
+		args = fill_db_struct(cmd);
+		db_open(args);
 	}
 
 	free(cmd);

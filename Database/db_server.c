@@ -11,20 +11,34 @@ GDBM_FILE DATABASE;
 
 int db_start () 
 {
-    printf("Starting database\n");
-	
-	DATABASE = gdbm_open("467DB", 0, GDBM_NEWDB, 0644, 0);
-	
-	if (DATABASE == NULL) {
-		fprintf(stderr, "error: Failed to open GDBM");
-		exit(EXIT_FAILURE);
-	}
-
+    printf("Starting database\n");	
     return 0;
 }
 
 int db_create (struct db_args args)
 {
-	printf("DBTYPE: %d | DBNAME: %s\n", args.DB_TYPE, args.DB_NAME);
+	printf("Creating database %d - %s\n", args.DB_TYPE, args.DB_NAME);
+	
+	DATABASE = gdbm_open(args.DB_NAME, 0, GDBM_WRCREAT, 0644, 0);
+	
+	if (DATABASE == NULL) {
+		fprintf(stderr, "error: Failed to create GDBM");
+		return -1;
+	}
+	
+	return 0;
+}
+
+int db_open (struct db_args args)
+{
+	printf("Opening database %d - %s\n", args.DB_TYPE, args.DB_NAME);
+
+	DATABASE = gdbm_open(args.DB_NAME, 0, GDBM_WRITER, 0644, 0);
+	
+	if (DATABASE == NULL) {
+		fprintf(stderr, "error: Failed to open GDBM");
+		return -1;
+	}
+
 	return 0;
 }

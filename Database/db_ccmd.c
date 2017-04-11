@@ -20,3 +20,12 @@ int db_create (struct db_args args)
     RETURN_STATUS = db_create_1(arg, handle);
     return RETURN_STATUS == 0 ? 0 : *RETURN_STATUS;
 }
+
+int db_open (struct db_args args)
+{
+    db_args *arg;
+    arg = &args;
+
+    RETURN_STATUS = db_open_1(arg, handle);
+    return RETURN_STATUS == 0 ? 0 : *RETURN_STATUS;
+}
