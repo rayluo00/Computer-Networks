@@ -5,7 +5,7 @@
 static int RETURN_STATUS;
 
 int db_start (void);
-int db_option (int);
+int db_create (struct db_args);
 
 int *db_start_1_svc (void *arg, struct svc_req *rqstp)
 {
@@ -13,8 +13,8 @@ int *db_start_1_svc (void *arg, struct svc_req *rqstp)
     return &RETURN_STATUS;
 }
 
-int *db_option_1_svc (int *option, struct svc_req *rqstp)
+int *db_create_1_svc (db_args *args, struct svc_req *rqstp)
 {
-    RETURN_STATUS = db_option(*option);
+    RETURN_STATUS = db_create(*args);
     return &RETURN_STATUS;
 }

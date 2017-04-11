@@ -5,31 +5,25 @@
 #include <time.h>
 #include "database.h"
 #include <gdbm.h>
+#include "proto.h"
+
+GDBM_FILE DATABASE;
 
 int db_start () 
 {
     printf("Starting database\n");
+	
+	DATABASE = gdbm_open("467DB", 0, GDBM_NEWDB, 0644, 0);
+	
+	if (DATABASE == NULL) {
+		fprintf(stderr, "error: Failed to open GDBM");
+		exit(EXIT_FAILURE);
+	}
+
     return 0;
 }
 
-int db_option (int option)
+int db_create (struct db_args args)
 {
-	switch (option) {
-		case 0:
-			printf("Forbidden area...\n");
-			break;
-		case 1:
-			printf("Create database...\n");
-			break;
-		case 2:
-			printf("Open database...\n");
-			break;
-		case 3:
-			printf("Close database...\n");
-			break;
-		default:
-			printf("Invalid option.");
-	}	
-    
-    return 0;
+	return 0;
 }

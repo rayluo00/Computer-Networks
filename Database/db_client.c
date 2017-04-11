@@ -3,9 +3,13 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <gdbm.h>
+#include "proto.h"
+#include "database.h"
 #define MASK 15
 
 CLIENT *handle;
+struct db_args DB_INFO;
 
 typedef struct ret {
     int svr_mode;
@@ -13,21 +17,16 @@ typedef struct ret {
     int error;
 } ret_val;
 
-
 /* Client procedures */
+void display_options();
 int encode(int clientID, int option);
 ret_val decode(int code);
-int get_option(int clientID);
-int db_create(int dbType, char *dbName);
-int db_open(int dbType, char *dbName);
-int db_close();
-// TODO: Fill in params
-int db_put();
-int db_get();
+int get_cmd(int clientID);
+int get_status(ret_val ret);
 
 /* Server procedures */
 int db_start();
-int db_option(int option);
+int db_create(struct db_args args);
 
 void display_options ()
 {
@@ -57,11 +56,66 @@ ret_val decode (int code)
     return ret;
 }
 
-int get_option (int clientID)
+char **parse_args (char *line)
+{
+	int x = 0;
+	int idx;
+	int argc = 0;
+	int inWord = 0;
+	int argLens = strlen(line);
+	char *token;
+	char **cmd;	
+
+	for (idx = 0; idx < argLens; idx++) {
+		if (line[idx] == ' ' || line[idx] == 0) {
+			if (inWord) {
+				line[idx] = 0;
+				inWord = 0;
+			}
+		} else {
+			if (!inWord) {
+				inWord = 1;
+				argc++;
+			}
+		}
+	}
+
+	if (argc > 0) {
+		argc++;
+	}
+
+	cmd = (char **) malloc(sizeof(char *) * argc);
+
+	if (cmd == NULL) {
+		fprintf(stderr, "error: malloc failed during argument parsing");
+		exit(EXIT_FAILURE);
+	}
+
+	inWord = 0;
+	
+	for (idx = 0; idx < argLens; idx++) {
+		if (!inWord && (line[idx] != ' ' || line[idx] != 0)) {
+			token = &line[idx];
+			cmd[x] = token;
+			x++;
+			inWord = 1; 
+		} 
+		else if (inWord && (line[idx] == ' ' || line[idx] == 0)) {
+			inWord = 0;	
+		}
+	}
+
+	cmd[x] = 0;
+
+	return cmd;
+}
+
+int get_cmd (int clientID)
 {
     char buffer[1024];
-    int option;
-    int code;
+	char *input;
+	char **cmd;
+	//int code;
 
     do {
         printf("$ ");
@@ -70,12 +124,21 @@ int get_option (int clientID)
         if (tolower(*buffer) == 'q') {
             exit(0);
         }
+    } while (buffer == NULL);
 
-        option = atoi(buffer);
-    } while (option < 0 || option > 3);
+    //code = encode(clientID, cmd);
+	//return db_option(code);
 
-    code = encode(clientID, option);
-    return db_option(code);
+	cmd = parse_args(buffer);
+
+	int x = 0;	
+	while (cmd[x] != NULL) {
+		printf("CMD[%d] : %s\n", x, cmd[x]);
+		x++;
+	}
+
+	free(cmd);
+	return 0;	
 }
 
 int get_status (ret_val ret)
@@ -130,11 +193,11 @@ int main (int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    display_options();
+    //display_options();
 
     while (online) {
         while (status > -1) {
-            ret = decode(get_option(clientID));
+            ret = decode(get_cmd(clientID));
             status = get_status(ret);
         }
     }

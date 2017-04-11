@@ -1,17 +1,17 @@
 CC = gcc
-CFLAGS = -g -Wall
-CLNT_OBJS = db_ccmd.o database_clnt.o rpc_calls.o
-SVR_OBJS = db_scmd.o database_svc.o db_server.o
+CFLAGS = -g
+CLNT_OBJS = database_xdr.o database_clnt.o db_ccmd.o db_client.o proto.h
+SVR_OBJS = database_xdr.o database_svc.o db_scmd.o db_server.o proto.h
 
 all: $(CLNT_OBJS) $(SVR_OBJS)
-	$(CC) $(CFLAGS) -lc -o clnt $(CLNT_OBJS)
-	$(CC) $(CFLAGS) -lc -o svr $(SVR_OBJS)
+	$(CC) $(CFLAGS) -lc -lgdbm -o clnt $(CLNT_OBJS)
+	$(CC) $(CFLAGS) -lc -lgdbm -o svr $(SVR_OBJS)
 
 client: $(CLNT_OBJS)
-	$(CC) $(CFLAGS) -lc -o clnt $(CLNT_OBJS)
+	$(CC) $(CFLAGS) -lc -lgdbm -o clnt $(CLNT_OBJS)
 
 server: $(SVR_OBJS)
-	$(CC) $(CFLAGS) -lc -o svr $(SVR_OBJS)
+	$(CC) $(CFLAGS) -lc -lgdbm -o svr $(SVR_OBJS)
 
 clean:
 	$(RM) *.o , clnt , svr , *# , *~
