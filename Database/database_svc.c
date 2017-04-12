@@ -22,6 +22,8 @@ database_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 	union {
 		struct db_args db_create_1_arg;
 		struct db_args db_open_1_arg;
+		struct location_params db_put_1_arg;
+		struct location_params db_get_1_arg;
 	} argument;
 	char *result;
 	xdrproc_t _xdr_argument, _xdr_result;
@@ -54,6 +56,18 @@ database_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		_xdr_argument = (xdrproc_t) xdr_void;
 		_xdr_result = (xdrproc_t) xdr_int;
 		local = (char *(*)(char *, struct svc_req *)) db_close_1_svc;
+		break;
+
+	case DB_PUT:
+		_xdr_argument = (xdrproc_t) xdr_location_params;
+		_xdr_result = (xdrproc_t) xdr_int;
+		local = (char *(*)(char *, struct svc_req *)) db_put_1_svc;
+		break;
+
+	case DB_GET:
+		_xdr_argument = (xdrproc_t) xdr_location_params;
+		_xdr_result = (xdrproc_t) xdr_int;
+		local = (char *(*)(char *, struct svc_req *)) db_get_1_svc;
 		break;
 
 	default:

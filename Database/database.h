@@ -20,6 +20,14 @@ struct db_args {
 };
 typedef struct db_args db_args;
 
+struct location_params {
+	char *NAME;
+	char *CITY;
+	char *STATE;
+	char *TYPE;
+};
+typedef struct location_params location_params;
+
 #define DATABASE_PROG 24670113
 #define DATABASE_VERS 1
 
@@ -36,6 +44,12 @@ extern  int * db_open_1_svc(struct db_args *, struct svc_req *);
 #define DB_CLOSE 4
 extern  int * db_close_1(void *, CLIENT *);
 extern  int * db_close_1_svc(void *, struct svc_req *);
+#define DB_PUT 5
+extern  int * db_put_1(struct location_params *, CLIENT *);
+extern  int * db_put_1_svc(struct location_params *, struct svc_req *);
+#define DB_GET 6
+extern  int * db_get_1(struct location_params *, CLIENT *);
+extern  int * db_get_1_svc(struct location_params *, struct svc_req *);
 extern int database_prog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 
 #else /* K&R C */
@@ -51,6 +65,12 @@ extern  int * db_open_1_svc();
 #define DB_CLOSE 4
 extern  int * db_close_1();
 extern  int * db_close_1_svc();
+#define DB_PUT 5
+extern  int * db_put_1();
+extern  int * db_put_1_svc();
+#define DB_GET 6
+extern  int * db_get_1();
+extern  int * db_get_1_svc();
 extern int database_prog_1_freeresult ();
 #endif /* K&R C */
 
@@ -58,9 +78,11 @@ extern int database_prog_1_freeresult ();
 
 #if defined(__STDC__) || defined(__cplusplus)
 extern  bool_t xdr_db_args (XDR *, db_args*);
+extern  bool_t xdr_location_params (XDR *, location_params*);
 
 #else /* K&R C */
 extern bool_t xdr_db_args ();
+extern bool_t xdr_location_params ();
 
 #endif /* K&R C */
 

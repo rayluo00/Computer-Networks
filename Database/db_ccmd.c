@@ -36,3 +36,22 @@ int db_close ()
     return RETURN_STATUS == 0 ? 0 : *RETURN_STATUS;
 
 }
+
+int db_put (struct location_params args)
+{
+    location_params *arg;
+    arg = &args;
+
+    RETURN_STATUS = db_put_1(arg, handle);
+    return RETURN_STATUS == 0 ? 0 : *RETURN_STATUS;
+}
+
+int db_get (struct location_params args)
+{
+    location_params *arg;
+    arg = &args;
+
+    RETURN_STATUS = db_get_1(arg, handle);
+    return RETURN_STATUS == 0 ? 0 : *RETURN_STATUS;
+}
+

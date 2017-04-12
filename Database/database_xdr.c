@@ -16,3 +16,19 @@ xdr_db_args (XDR *xdrs, db_args *objp)
 		 return FALSE;
 	return TRUE;
 }
+
+bool_t
+xdr_location_params (XDR *xdrs, location_params *objp)
+{
+	register int32_t *buf;
+
+	 if (!xdr_string (xdrs, &objp->NAME, ~0))
+		 return FALSE;
+	 if (!xdr_string (xdrs, &objp->CITY, ~0))
+		 return FALSE;
+	 if (!xdr_string (xdrs, &objp->STATE, ~0))
+		 return FALSE;
+	 if (!xdr_string (xdrs, &objp->TYPE, ~0))
+		 return FALSE;
+	return TRUE;
+}

@@ -10,6 +10,7 @@
 
 CLIENT *handle;
 struct db_args DB_INFO;
+struct location_params LOCATION_DATA;
 
 typedef struct ret {
     int svr_mode;
@@ -23,12 +24,21 @@ int encode(int clientID, int option);
 ret_val decode(int code);
 int get_cmd(int clientID);
 int get_status(ret_val ret);
-int create_database(char **cmd);
+char **parse_args(char *line);
+struct db_args fill_db_struct(char **cmd);
 
 /* Server procedures */
 int db_start();
 int db_create(struct db_args args);
+int db_open(struct db_args args);
+int db_close();
+int db_put(struct location_params params);
+int db_get(struct location_params params);
 
+/******************************************************************************
+ * 
+ *
+ */
 void display_options ()
 {
     printf("===================================\n"
@@ -39,11 +49,19 @@ void display_options ()
             "===================================\n\n");
 }
 
+/******************************************************************************
+ * 
+ *
+ */
 int encode (int clientID, int option)
 {
     return (clientID << 8) + option;
 }
 
+/******************************************************************************
+ * 
+ *
+ */
 ret_val decode (int code)
 {
     ret_val ret;
@@ -57,6 +75,10 @@ ret_val decode (int code)
     return ret;
 }
 
+/******************************************************************************
+ * 
+ *
+ */
 char **parse_args (char *line)
 {
 	int x = 0;
@@ -81,11 +103,7 @@ char **parse_args (char *line)
 		}
 	}
 
-	if (argc > 0) {
-		argc++;
-	}
-
-	cmd = (char **) malloc(sizeof(char *) * argc);
+	cmd = (char **) malloc(sizeof(char *) * (++argc));
 
 	if (cmd == NULL) {
 		fprintf(stderr, "error: malloc failed during argument parsing");
@@ -111,6 +129,10 @@ char **parse_args (char *line)
 	return cmd;
 }
 
+/******************************************************************************
+ * 
+ *
+ */
 struct db_args fill_db_struct (char **cmd)
 {
 	struct db_args args;
@@ -133,6 +155,25 @@ struct db_args fill_db_struct (char **cmd)
 	return args;
 }
 
+/******************************************************************************
+ * 
+ *
+ */
+struct location_params fill_location_params (char **cmd)
+{
+	struct location_params params;
+	char *name;
+	char *city;
+	char *state;
+	char *type;
+	
+	return params;
+}
+
+/******************************************************************************
+ * 
+ *
+ */
 int get_cmd (int clientID)
 {
     char buffer[1024];
@@ -140,6 +181,7 @@ int get_cmd (int clientID)
 	char **cmd;
 	//int code;
 	struct db_args args;
+	struct location_params params;
 
     do {
         printf("$ ");
@@ -155,7 +197,7 @@ int get_cmd (int clientID)
 
 	cmd = parse_args(buffer);
 
-	/*
+	/*	
 	int x = 0;	
 	while (cmd[x] != NULL) {
 		printf("CMD[%d] : %s\n", x, cmd[x]);
@@ -172,19 +214,25 @@ int get_cmd (int clientID)
 		db_open(args);
 	}
 	else if (!strncmp(cmd[0], "close", 5)) {
-		//TODO: Finish close
+		db_close();
 	}
 	else if (!strncmp(cmd[0], "put", 3)) {
 		//TODO: Finish put
+		params = fill_location_params(cmd);
 	}
 	else if (!strncmp(cmd[0], "get", 3)) {
-		//TODO: FInish get
+		//TODO: Finish get
+		params = fill_location_params(cmd);
 	}
 
 	free(cmd);
 	return 0;	
 }
 
+/******************************************************************************
+ * 
+ *
+ */
 int get_status (ret_val ret)
 {
     int retVal = 0;
@@ -210,6 +258,10 @@ int get_status (ret_val ret)
     return retVal;
 }
 
+/******************************************************************************
+ * 
+ *
+ */
 int main (int argc, char **argv) 
 {
     int progNum = 24670113;
