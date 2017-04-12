@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <gdbm.h>
+#include <string.h>
 #include "proto.h"
 #include "database.h"
 #define MASK 15
@@ -167,12 +168,12 @@ struct location_params fill_location_params (char **cmd)
 	char *city;
 	char *state;
 	char *type;
-	char *token = strtok(cmd[1], ",");
+	char *token;
+	char *cmd_params = strdup(cmd[1]);
 
 	int x = 0;
-	while (token != NULL) {
+	while ((token = strsep(&cmd_params, ",")) != NULL) {
 		printf("TOK[%d] : %s\n",x++, token);
-		token = strtok(NULL, ",");
 	}
 	
 	return params;
