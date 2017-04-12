@@ -26,6 +26,7 @@ int get_cmd(int clientID);
 int get_status(ret_val ret);
 char **parse_args(char *line);
 struct db_args fill_db_struct(char **cmd);
+struct location_params fill_location_params(char **cmd);
 
 /* Server procedures */
 int db_start();
@@ -166,6 +167,13 @@ struct location_params fill_location_params (char **cmd)
 	char *city;
 	char *state;
 	char *type;
+	char *token = strtok(cmd[1], ",");
+
+	int x = 0;
+	while (token != NULL) {
+		printf("TOK[%d] : %s\n",x++, token);
+		token = strtok(NULL, ",");
+	}
 	
 	return params;
 }
