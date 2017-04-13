@@ -63,6 +63,11 @@ int db_open (struct db_args args)
  */
 int db_close () 
 {
+	if (DATABASE == NULL) {
+		fprintf(stderr, "error: No database open, nothing to close\n");
+		return -1;
+	}
+
 	printf("CLOSE Database\n");
 	gdbm_close(DATABASE);
 	DATABASE = NULL;
@@ -89,7 +94,7 @@ int db_put (struct location_params args)
 	key.dptr = args.NAME;
 	key.dsize = strlen(args.NAME) + 1;
 	
-	print_ret = snprintf(data_buf, 1024, "%s,%s,%s,%s", args.NAME, args.CITY, args.STATE, args.TYPE);
+	print_ret = snprintf(data_buf, 1024, "%s,%s,%s", args.CITY, args.STATE, args.TYPE);
 
 	if (print_ret < 0) {
 		fprintf(stderr, "error: snprintf failed to create data buffer\n");
@@ -134,7 +139,7 @@ int db_get (struct location_params args)
 		return -1;
 	}
 
-	printf("GET RETURN %s | %d\n", data.dptr, data.dsize);
+	printf("GET KEY: %s | DATA: %s | %d\n", key.dptr, data.dptr, data.dsize);
 
 	return 0;
 }

@@ -233,6 +233,7 @@ int get_cmd (int clientID)
         fgets(buffer, sizeof(buffer), stdin);
 
         if (tolower(*buffer) == 'q') {
+			db_close();
             exit(0);
         }
     } while (buffer == NULL);
