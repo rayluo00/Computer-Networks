@@ -109,6 +109,7 @@ char **parse_args (char *line)
 
 	if (cmd == NULL) {
 		fprintf(stderr, "error: malloc failed during argument parsing");
+		db_close();
 		exit(EXIT_FAILURE);
 	}
 
@@ -263,12 +264,10 @@ int get_cmd (int clientID)
 		db_close();
 	}
 	else if (!strncmp(cmd[0], "put", 3)) {
-		//TODO: Finish put
 		params = fill_location_params(cmd);
 		db_put(params);
 	}
 	else if (!strncmp(cmd[0], "get", 3)) {
-		//TODO: Finish get
 		params = fill_location_params(cmd);
 		db_get(params);
 	} else {
@@ -355,6 +354,7 @@ int main (int argc, char **argv)
         }
     }
 
+	db_close();
     printf("DB offline\n");
     
     return 0;
