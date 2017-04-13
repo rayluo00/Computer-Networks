@@ -164,6 +164,8 @@ struct db_args fill_db_struct (char **cmd)
 struct location_params fill_location_params (char **cmd)
 {
 	struct location_params params;
+	int idx = 0;
+	int token_len;
 	char *name;
 	char *city;
 	char *state;
@@ -171,10 +173,44 @@ struct location_params fill_location_params (char **cmd)
 	char *token;
 	char *cmd_params = strdup(cmd[1]);
 
-	int x = 0;
 	while ((token = strsep(&cmd_params, ",")) != NULL) {
-		printf("TOK[%d] : %s\n",x++, token);
+		printf("TOK[%d] : %s\n", idx, token);
+		
+		if (token != '\0') {
+			token_len = strlen(token) + 1;
+
+			switch (idx) {
+				case 0:
+					name = (char *) malloc(sizeof(char *) * token_len);
+					strcpy(name, token);
+					break;
+				case 1:
+					city = (char *) malloc(sizeof(char *) * token_len);
+					strcpy(city, token);
+					break;
+				case 2:
+					state = (char *) malloc(sizeof(char *) * token_len); 
+					strcpy(state, token);
+					break;
+				case 3:
+					type = (char *) malloc(sizeof(char *) * token_len);
+					strcpy(type, token);
+					break;
+				default:
+					fprintf(stderr, "error: Invalid location params %s", token);
+			}			
+		}
+
+		idx++;
 	}
+
+	params.NAME = name;
+	params.CITY = city;
+	params.STATE = state;
+	params.TYPE = type;	
+
+	// TODO: Free location params after stored into gdbm
+	//free(cmd_params);
 	
 	return params;
 }
@@ -228,10 +264,14 @@ int get_cmd (int clientID)
 	else if (!strncmp(cmd[0], "put", 3)) {
 		//TODO: Finish put
 		params = fill_location_params(cmd);
+		db_put(params);
 	}
 	else if (!strncmp(cmd[0], "get", 3)) {
 		//TODO: Finish get
 		params = fill_location_params(cmd);
+		db_get(params);
+	} else {
+		fprintf(stderr, "error: Invalid command");
 	}
 
 	free(cmd);
@@ -283,7 +323,13 @@ int main (int argc, char **argv)
     ret_val ret;
 
     if (host == 0) {
-        host = localhost;
+		if (argv[1] != NULL) {
+			printf("CONNECT : %s\n", argv[1]);
+        	host = argv[1];
+		} else {
+			printf("CONNECT : %s\n", localhost);
+			host = localhost;
+		}
     }
 
     handle = clnt_create(host, progNum, verNum, "tcp");

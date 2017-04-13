@@ -33,6 +33,8 @@ int db_create (struct db_args args)
 		fprintf(stderr, "error: Failed to create GDBM");
 		return -1;
 	}
+
+	gdbm_close(DATABASE);
 	
 	return 0;
 }
@@ -73,7 +75,37 @@ int db_close ()
  */
 int db_put (struct location_params args)
 {
-	printf("PUT %s | %s | %s | %s\n", args.NAME, args.CITY, args.STATE, args.TYPE);
+	printf("PUT %s| %s | %s | %s\n", args.NAME, args.CITY, args.STATE, args.TYPE);
+
+	if (DATABASE == NULL) {
+		return -1;
+	}
+	
+	datum key;
+	datum data;
+	int print_ret;
+	char data_buf[1024];
+
+	key.dptr = args.NAME;
+	key.dsize = strlen(args.NAME) + 1;
+	
+	print_ret = snprintf(data_buf, 1024, "%s,%s,%s,%s", args.NAME, args.CITY, args.STATE, args.TYPE);
+
+	if (print_ret < 0) {
+		fprintf(stderr, "error: snprintf failed to create data buffer\n");
+		return -1;
+	}
+
+	printf("PUT DATA BUF %s\n", data_buf);
+
+	data.dptr = data_buf;
+	data.dsize = 1025;
+	
+	if (gdbm_store(DATABASE, key, data, GDBM_INSERT)) {
+		fprintf(stderr, "error: Unable to store key %s\n", key);
+		return -1;
+	}
+
 	return 0;
 }
 
@@ -84,5 +116,25 @@ int db_put (struct location_params args)
 int db_get (struct location_params args)
 {
 	printf("GET %s | %s | %s | %s\n", args.NAME, args.CITY, args.STATE, args.TYPE);
+	
+	if (DATABASE == NULL) {
+		return -1;
+	}
+
+	datum key;
+	datum data;
+
+	key.dptr = args.NAME;
+	key.dsize = strlen(args.NAME) + 1;
+
+	data = gdbm_fetch(DATABASE, key);
+
+	if (data.dptr == NULL) {
+		fprintf(stderr, "error: Unable to fetch key %s\n", key);
+		return -1;
+	}
+
+	printf("GET RETURN %s | %d\n", data.dptr, data.dsize);
+
 	return 0;
 }
