@@ -10,6 +10,7 @@
 #define MASK 15
 
 CLIENT *handle;
+AUTH *auth;
 struct db_args DB_INFO;
 struct location_params LOCATION_DATA;
 
@@ -318,9 +319,11 @@ int main (int argc, char **argv)
     int online = 1;
     int clientID;
     int status;
+	int groupSize;
     char *localhost = "localhost";
     char *host = 0;
     ret_val ret;
+	gid_t gids[100];
 
     if (host == 0) {
 		if (argv[1] != NULL) {
@@ -332,12 +335,22 @@ int main (int argc, char **argv)
 		}
     }
 
+	if ((groupSize = getgroups(NGROUPS_MAX, gids)) < 0) {
+		fprintf(stderr, "error: Unable to get gids\n");
+		exit(EXIT_FAILURE);
+	} else {
+		groupSize = (groupSize > 16) ? 16 : groupSize;
+	}
+
     handle = clnt_create(host, progNum, verNum, "tcp");
 
     if (!handle) {
         fprintf(stderr, "error: Unable to connect to host: %s\n", host);
         exit(EXIT_FAILURE);
     }
+
+	auth = authunix_create(host, getuid(), getgid(), groupSize, gids);
+	handle->cl_auth = auth;
 
     if ((clientID = db_start()) < 0) {
         fprintf(stderr, "error: Unable to start database");
@@ -356,6 +369,9 @@ int main (int argc, char **argv)
 
 	db_close();
     printf("DB offline\n");
-    
+ 
+	auth_destroy(handle->cl_auth);
+	clnt_destroy(handle);
+   
     return 0;
 }

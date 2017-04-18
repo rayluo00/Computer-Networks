@@ -8,6 +8,14 @@
 #include "proto.h"
 
 GDBM_FILE DATABASE;
+/******************************************************************************
+ *
+ *
+ */
+int db_auth ()
+{	
+	return 0;
+}
 
 /******************************************************************************
  *
@@ -139,7 +147,7 @@ int db_get (struct location_params args)
 		return -1;
 	}
 
-	printf("GET KEY: %s | DATA: %s | %d\n", key.dptr, data.dptr, data.dsize);
+	printf("GET KEY: %s | DATA: %s\n", key.dptr, data.dptr);
 
 	return 0;
 }
