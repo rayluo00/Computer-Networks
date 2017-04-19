@@ -8,8 +8,8 @@
 #include <gdbm.h>
 #include <rpcsvc/rusers.h>
 #include <rpc/auth.h>
+#include <rpc/auth_unix.h>
 
-extern CLIENT *handle;
 GDBM_FILE DATABASE;
 
 /******************************************************************************
@@ -18,24 +18,7 @@ GDBM_FILE DATABASE;
  */
 int db_auth ()
 {
-	printf("AUTHENTICATE client handle\n");
-
-	if (handle == NULL) {
-		fprintf(stderr, "error: No client handle\n");
-		return -1;
-	}
-
-	//printf("AUTH: %s\n", handle->cl_auth->ah_cred.oa_base);
-	printf("RET %d\n", handle->cl_auth->ah_cred.oa_base);
-
-	/*
-	if (handle->cl_auth->ah_ops->ah_validate) {
-		printf("AUTHENTICATE success\n");
-		return 0;
-	}
-	*/
-
-	//printf("AUTHENTICATE fail\n");
+	printf("AUTHENTICATE client\n");
 	return 0;
 }
 

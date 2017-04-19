@@ -7,6 +7,7 @@
 #include <string.h>
 #include <rpcsvc/rusers.h>
 #include <rpc/auth.h>
+#include <rpc/auth_unix.h>
 #include "database.h"
 #define MASK 15
 
@@ -341,7 +342,7 @@ int main (int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-	//handle->cl_auth = authsys_create(host, getuid(), getgid(), groupSize, gids);
+	//handle->cl_auth = authunix_create(host, getuid(), getgid(), groupSize, gids);
 	handle->cl_auth = authunix_create_default();
 
 	if (db_auth() < 0) {
