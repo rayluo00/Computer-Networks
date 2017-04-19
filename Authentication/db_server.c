@@ -43,7 +43,7 @@ int db_create (struct db_args args)
 	DATABASE = gdbm_open(args.DB_NAME, 0, GDBM_WRCREAT, 0644, 0);
 	
 	if (DATABASE == NULL) {
-		fprintf(stderr, "error: Failed to create GDBM");
+		fprintf(stderr, "error: Failed to create GDBM\n");
 		return -1;
 	}
 
@@ -63,7 +63,7 @@ int db_open (struct db_args args)
 	DATABASE = gdbm_open(args.DB_NAME, 0, GDBM_WRITER, 0644, 0);
 	
 	if (DATABASE == NULL) {
-		fprintf(stderr, "error: Failed to open GDBM");
+		fprintf(stderr, "error: Failed to open GDBM\n");
 		return -1;
 	}
 
@@ -96,6 +96,7 @@ int db_put (struct location_params args)
 	printf("PUT %s| %s | %s | %s\n", args.NAME, args.CITY, args.STATE, args.TYPE);
 
 	if (DATABASE == NULL) {
+		fprintf(stderr, "error: No opened database\n");
 		return -1;
 	}
 	
@@ -136,6 +137,7 @@ int db_get (struct location_params args)
 	printf("GET %s | %s | %s | %s\n", args.NAME, args.CITY, args.STATE, args.TYPE);
 	
 	if (DATABASE == NULL) {
+		fprintf(stderr, "error: No database open\n");
 		return -1;
 	}
 

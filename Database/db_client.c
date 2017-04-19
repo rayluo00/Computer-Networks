@@ -36,32 +36,17 @@ int db_open(struct db_args args);
 int db_close();
 int db_put(struct location_params params);
 int db_get(struct location_params params);
+int db_auth();
 
-/******************************************************************************
+/*************************************************************************
  * 
- *
- */
-void display_options ()
-{
-    printf("===================================\n"
-            "DATABASE OPTIONS\n"
-            "1. Create Database.\n"
-            "2. Open Database.\n"
-            "3. Close Database.\n"
-            "===================================\n\n");
-}
-
-/******************************************************************************
- * 
- *
  */
 int encode (int clientID, int option)
 {
     return (clientID << 8) + option;
 }
 
-/******************************************************************************
- * 
+/*************************************************************************
  *
  */
 ret_val decode (int code)
@@ -77,8 +62,7 @@ ret_val decode (int code)
     return ret;
 }
 
-/******************************************************************************
- * 
+/*************************************************************************
  *
  */
 char **parse_args (char *line)
@@ -132,8 +116,7 @@ char **parse_args (char *line)
 	return cmd;
 }
 
-/******************************************************************************
- * 
+/*************************************************************************
  *
  */
 struct db_args fill_db_struct (char **cmd)
@@ -145,7 +128,7 @@ struct db_args fill_db_struct (char **cmd)
 	dbType = atoi(cmd[1]);
 
 	if (dbType == 0 && cmd[1] != "0") {
-		dbType = -1;
+		dbType = 1;
 		dbName = cmd[1];
 	} 
 	else if (cmd[2] != NULL) {
@@ -158,8 +141,7 @@ struct db_args fill_db_struct (char **cmd)
 	return args;
 }
 
-/******************************************************************************
- * 
+/*************************************************************************
  *
  */
 struct location_params fill_location_params (char **cmd)
@@ -172,7 +154,7 @@ struct location_params fill_location_params (char **cmd)
 	char *state;
 	char *type;
 	char *token;
-	char *cmd_params = strdup(cmd[1]);
+	char *cmd_params = strdup(cmd[1]);	
 
 	while ((token = strsep(&cmd_params, ",")) != NULL) {
 		printf("TOK[%d] : %s\n", idx, token);
@@ -183,18 +165,42 @@ struct location_params fill_location_params (char **cmd)
 			switch (idx) {
 				case 0:
 					name = (char *) malloc(sizeof(char *) * token_len);
+
+					if (name == NULL) {
+						fprintf(stderr, "error: Unable to malloc\n");
+						return;
+					}
+
 					strcpy(name, token);
 					break;
 				case 1:
 					city = (char *) malloc(sizeof(char *) * token_len);
+					
+					if (city == NULL) {
+						fprintf(stderr, "error: Unable to malloc\n");
+						return;
+					}
+
 					strcpy(city, token);
 					break;
 				case 2:
 					state = (char *) malloc(sizeof(char *) * token_len); 
+					
+					if (state == NULL) {
+						fprintf(stderr, "error: Unable to malloc\n");
+						return;
+					}
+
 					strcpy(state, token);
 					break;
 				case 3:
 					type = (char *) malloc(sizeof(char *) * token_len);
+					
+					if (type == NULL) {
+						fprintf(stderr, "error: Unable to malloc\n");
+						return;
+					}
+
 					strcpy(type, token);
 					break;
 				default:
@@ -216,8 +222,7 @@ struct location_params fill_location_params (char **cmd)
 	return params;
 }
 
-/******************************************************************************
- * 
+/*************************************************************************
  *
  */
 int get_cmd (int clientID)
@@ -278,8 +283,7 @@ int get_cmd (int clientID)
 	return 0;	
 }
 
-/******************************************************************************
- * 
+/*************************************************************************
  *
  */
 int get_status (ret_val ret)
@@ -307,8 +311,7 @@ int get_status (ret_val ret)
     return retVal;
 }
 
-/******************************************************************************
- * 
+/*************************************************************************
  *
  */
 int main (int argc, char **argv) 
