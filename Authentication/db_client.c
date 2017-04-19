@@ -5,12 +5,14 @@
 #include <unistd.h>
 #include <gdbm.h>
 #include <string.h>
-#include "proto.h"
+#include <rpcsvc/rusers.h>
+#include <rpc/auth.h>
 #include "database.h"
 #define MASK 15
 
 CLIENT *handle;
 AUTH *auth;
+
 struct db_args DB_INFO;
 struct location_params LOCATION_DATA;
 
@@ -21,7 +23,6 @@ typedef struct ret {
 } ret_val;
 
 /* Client procedures */
-void display_options();
 int encode(int clientID, int option);
 ret_val decode(int code);
 int get_cmd(int clientID);
@@ -37,20 +38,7 @@ int db_open(struct db_args args);
 int db_close();
 int db_put(struct location_params params);
 int db_get(struct location_params params);
-
-/******************************************************************************
- * 
- *
- */
-void display_options ()
-{
-    printf("===================================\n"
-            "DATABASE OPTIONS\n"
-            "1. Create Database.\n"
-            "2. Open Database.\n"
-            "3. Close Database.\n"
-            "===================================\n\n");
-}
+int db_auth();
 
 /******************************************************************************
  * 
@@ -272,7 +260,7 @@ int get_cmd (int clientID)
 		params = fill_location_params(cmd);
 		db_get(params);
 	} else {
-		fprintf(stderr, "error: Invalid command");
+		fprintf(stderr, "error: Invalid command\n");
 	}
 
 	free(cmd);
@@ -320,10 +308,14 @@ int main (int argc, char **argv)
     int clientID;
     int status;
 	int groupSize;
+	int intsend, intrecv;
     char *localhost = "localhost";
     char *host = 0;
     ret_val ret;
 	gid_t gids[100];
+	unsigned int svr_auth;
+	enum clnt_stat clnt_auth;
+	struct timeval timeout;
 
     if (host == 0) {
 		if (argv[1] != NULL) {
@@ -344,20 +336,23 @@ int main (int argc, char **argv)
 
     handle = clnt_create(host, progNum, verNum, "tcp");
 
-    if (!handle) {
+    if (handle == NULL) {
         fprintf(stderr, "error: Unable to connect to host: %s\n", host);
         exit(EXIT_FAILURE);
     }
 
-	auth = authunix_create(host, getuid(), getgid(), groupSize, gids);
-	handle->cl_auth = auth;
+	//handle->cl_auth = authsys_create(host, getuid(), getgid(), groupSize, gids);
+	handle->cl_auth = authunix_create_default();
 
-    if ((clientID = db_start()) < 0) {
+	if (db_auth() < 0) {
+		fprintf(stderr, "error: Invalid authentication credentials\n");
+		exit(EXIT_FAILURE);
+	}
+    
+	if ((clientID = db_start()) < 0) {
         fprintf(stderr, "error: Unable to start database");
         exit(EXIT_FAILURE);
     }
-
-    //display_options();
 
     while (online) {
         while (status > -1) {

@@ -10,6 +10,7 @@ int db_open (struct db_args);
 int db_close(void);
 int db_put(struct location_params);
 int db_get(struct location_params);
+int db_auth(void);
 
 int *db_start_1_svc (void *arg, struct svc_req *rqstp)
 {
@@ -46,3 +47,10 @@ int *db_get_1_svc (location_params *args, struct svc_req *rqstp)
     RETURN_STATUS = db_get(*args);
     return &RETURN_STATUS;
 }
+
+int *db_auth_1_svc (void *args, struct svc_req *rqstp)
+{
+	RETURN_STATUS = db_auth();
+	return &RETURN_STATUS;
+}
+

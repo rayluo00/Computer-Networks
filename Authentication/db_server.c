@@ -1,3 +1,4 @@
+#include <sys/types.h>
 #include <rpc/rpc.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -5,15 +6,36 @@
 #include <time.h>
 #include "database.h"
 #include <gdbm.h>
-#include "proto.h"
+#include <rpcsvc/rusers.h>
+#include <rpc/auth.h>
 
+extern CLIENT *handle;
 GDBM_FILE DATABASE;
+
 /******************************************************************************
  *
  *
  */
 int db_auth ()
-{	
+{
+	printf("AUTHENTICATE client handle\n");
+
+	if (handle == NULL) {
+		fprintf(stderr, "error: No client handle\n");
+		return -1;
+	}
+
+	//printf("AUTH: %s\n", handle->cl_auth->ah_cred.oa_base);
+	printf("RET %d\n", handle->cl_auth->ah_cred.oa_base);
+
+	/*
+	if (handle->cl_auth->ah_ops->ah_validate) {
+		printf("AUTHENTICATE success\n");
+		return 0;
+	}
+	*/
+
+	//printf("AUTHENTICATE fail\n");
 	return 0;
 }
 
@@ -23,7 +45,7 @@ int db_auth ()
  */
 int db_start () 
 {
-    printf("START database\n");	
+    printf("START database\n");
     return 0;
 }
 

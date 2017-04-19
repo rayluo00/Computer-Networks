@@ -50,6 +50,9 @@ extern  int * db_put_1_svc(struct location_params *, struct svc_req *);
 #define DB_GET 6
 extern  int * db_get_1(struct location_params *, CLIENT *);
 extern  int * db_get_1_svc(struct location_params *, struct svc_req *);
+#define DB_AUTH 7
+extern  int * db_auth_1(void *, CLIENT *);
+extern  int * db_auth_1_svc(void *, struct svc_req *);
 extern int database_prog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 
 #else /* K&R C */
@@ -71,6 +74,9 @@ extern  int * db_put_1_svc();
 #define DB_GET 6
 extern  int * db_get_1();
 extern  int * db_get_1_svc();
+#define DB_AUTH 7
+extern  int * db_auth_1();
+extern  int * db_auth_1_svc();
 extern int database_prog_1_freeresult ();
 #endif /* K&R C */
 

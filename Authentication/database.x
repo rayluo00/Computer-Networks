@@ -18,5 +18,6 @@ program DATABASE_PROG {
 		int DB_CLOSE (void) = 4;
 		int DB_PUT (struct location_params) = 5;
 		int DB_GET (struct location_params) = 6;
+		int DB_AUTH (void) = 7;
     } = 1;
 } = 24670113;

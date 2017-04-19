@@ -55,3 +55,8 @@ int db_get (struct location_params args)
     return RETURN_STATUS == 0 ? 0 : *RETURN_STATUS;
 }
 
+int db_auth ()
+{
+	RETURN_STATUS = db_auth_1(0, handle);
+	return RETURN_STATUS == 0 ? 0 : *RETURN_STATUS;
+}
