@@ -30,5 +30,7 @@ xdr_location_params (XDR *xdrs, location_params *objp)
 		 return FALSE;
 	 if (!xdr_string (xdrs, &objp->TYPE, ~0))
 		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->STATUS))
+		 return FALSE;
 	return TRUE;
 }

@@ -12,33 +12,21 @@
 
 GDBM_FILE DATABASE;
 
-/******************************************************************************
- *
- *
- */
 int db_auth ()
 {
 	printf("AUTHENTICATE client\n");
 	return 0;
 }
 
-/******************************************************************************
- *
- *
- */
 int db_start () 
 {
     printf("START database\n");
     return 0;
 }
 
-/******************************************************************************
- *
- *
- */
 int db_create (struct db_args args)
 {
-	printf("CREATE %d - %s\n", args.DB_TYPE, args.DB_NAME);
+	printf("CREATE %d:%s\n", args.DB_TYPE, args.DB_NAME);
 	
 	DATABASE = gdbm_open(args.DB_NAME, 0, GDBM_WRCREAT, 0644, 0);
 	
@@ -52,13 +40,9 @@ int db_create (struct db_args args)
 	return 0;
 }
 
-/******************************************************************************
- *
- *
- */
 int db_open (struct db_args args)
 {
-	printf("OPEN %d - %s\n", args.DB_TYPE, args.DB_NAME);
+	printf("OPEN %d:%s\n", args.DB_TYPE, args.DB_NAME);
 
 	DATABASE = gdbm_open(args.DB_NAME, 0, GDBM_WRITER, 0644, 0);
 	
@@ -70,10 +54,6 @@ int db_open (struct db_args args)
 	return 0;
 }
 
-/******************************************************************************
- *
- *
- */
 int db_close () 
 {
 	if (DATABASE == NULL) {
@@ -87,10 +67,6 @@ int db_close ()
 	return 0;
 }
 
-/******************************************************************************
- *
- *
- */
 int db_put (struct location_params args)
 {
 	printf("PUT %s| %s | %s | %s\n", args.NAME, args.CITY, args.STATE, args.TYPE);
@@ -128,10 +104,6 @@ int db_put (struct location_params args)
 	return 0;
 }
 
-/******************************************************************************
- *
- *
- */
 int db_get (struct location_params args)
 {
 	printf("GET %s | %s | %s | %s\n", args.NAME, args.CITY, args.STATE, args.TYPE);
