@@ -8,7 +8,7 @@ struct location_params {
 	string CITY<>;
 	string STATE<>;
 	string TYPE<>;
-	int STATUS;
+	int VALID;
 };
 
 program DATABASE_PROG {

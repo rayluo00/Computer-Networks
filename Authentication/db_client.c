@@ -12,7 +12,6 @@
 #define MASK 15
 
 CLIENT *handle;
-AUTH *auth;
 
 struct db_args DB_INFO;
 struct location_params LOCATION_DATA;
@@ -163,8 +162,9 @@ struct location_params fill_location_params (char **cmd)
 					name = (char *) malloc(sizeof(char *) * token_len);
 
 					if (name == NULL) {
+						params.VALID = -1;
 						fprintf(stderr, "error: Unable to malloc\n");
-						return;
+						return params;
 					}
 
 					strcpy(name, token);
@@ -173,8 +173,9 @@ struct location_params fill_location_params (char **cmd)
 					city = (char *) malloc(sizeof(char *) * token_len);
 					
 					if (city == NULL) {
+						params.VALID = -1;
 						fprintf(stderr, "error: Unable to malloc\n");
-						return;
+						return params;
 					}
 
 					strcpy(city, token);
@@ -183,8 +184,9 @@ struct location_params fill_location_params (char **cmd)
 					state = (char *) malloc(sizeof(char *) * token_len); 
 					
 					if (state == NULL) {
+						params.VALID = -1;
 						fprintf(stderr, "error: Unable to malloc\n");
-						return;
+						return params;
 					}
 
 					strcpy(state, token);
@@ -193,8 +195,9 @@ struct location_params fill_location_params (char **cmd)
 					type = (char *) malloc(sizeof(char *) * token_len);
 					
 					if (type == NULL) {
+						params.VALID = -1;
 						fprintf(stderr, "error: Unable to malloc\n");
-						return;
+						return params;
 					}
 
 					strcpy(type, token);
@@ -208,8 +211,7 @@ struct location_params fill_location_params (char **cmd)
 	}
 
 	if (idx != 4) {
-		cleanup(name, city, state, type);
-		params.STATUS = -1;
+		params.VALID = -1;
 		fprintf(stderr, "error: Missing location param arguments\n");
 		return params;
 	}
@@ -218,7 +220,7 @@ struct location_params fill_location_params (char **cmd)
 	params.CITY = city;
 	params.STATE = state;
 	params.TYPE = type;
-	params.STATUS = 0;	
+	params.VALID = 0;	
 
 	// TODO: Free location params after stored into gdbm
 	//free(cmd_params);
@@ -271,12 +273,17 @@ int get_cmd (int clientID)
 	}
 	else if (!strncmp(cmd[0], "put", 3)) {
 		params = fill_location_params(cmd);
-		db_put(params);
+
+		if (params.VALID == 0) {
+			db_put(params);
+		}
 	}
 	else if (!strncmp(cmd[0], "get", 3)) {
 		params = fill_location_params(cmd);
-		printf("Ggot params\n");
-		db_get(params);
+		
+		if (params.VALID == 0) {
+			db_get(params);
+		}
 	} else {
 		fprintf(stderr, "error: Invalid command\n");
 	}

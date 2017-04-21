@@ -25,7 +25,7 @@ struct location_params {
 	char *CITY;
 	char *STATE;
 	char *TYPE;
-	int STATUS;
+	int VALID;
 };
 typedef struct location_params location_params;
 

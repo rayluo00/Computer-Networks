@@ -26,7 +26,7 @@ every: database_xdr.c database_clnt.c database_svc.c db_ccmd.c db_scmd.c db_clie
 	$(CC) $(CFLAGS) proto.h
 
 clean:
-	$(RM) *.o , clnt , svr , *# , *~
+	$(RM) *.o , clnt , svr , *# , *~ , *.gch
 	@echo Cleaning done.
 
 $(CLNT_OBJS): database.h
