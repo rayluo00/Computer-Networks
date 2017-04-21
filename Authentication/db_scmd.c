@@ -54,14 +54,23 @@ int *db_auth_1_svc (void *args, struct svc_req *rqstp)
 {
 	struct authunix_parms *sys_cred;
 	uid_t uid;
+	char *host;
 
 	sys_cred = (struct authunix_parms *) rqstp->rq_clntcred;
 	uid = sys_cred->aup_uid;
+	host = sys_cred->aup_machname;
 
 	printf("AUTH UID: %d : %s\n", uid, sys_cred->aup_machname);
 
 	if (uid < 1001 || uid > 1010) {
 		printf("error: Can not authenticate uid %d\n", uid);
+		return &RET_FAIL;
+	}
+
+	if (host == NULL || strncmp(host, "localhost", 9) != 0 || 
+		strncmp(host, "osbdata", 7) != 0 || 
+		strncmp(host, "networking", 10) != 0) {
+		fprintf(stderr, "error: Can not authenticate machine name %s\n", host);
 		return &RET_FAIL;
 	}
 
