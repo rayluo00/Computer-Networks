@@ -1,3 +1,17 @@
+/********************************************************************
+ * db_server.c
+ *
+ * Author: Raymond Weiming Luo
+ * CSCI 467: Computer Networks II
+ *
+ * Server-side application for the ONC RPC database program. The
+ * sever will authenticate the client before allowing a connection
+ * to the GDBM database. Once the client is allows a connect to the
+ * server, the server will recieve commands from the client by
+ * passing a struct holding the information for utilizing a database.
+ *
+ *******************************************************************/
+
 #include <sys/types.h>
 #include <rpc/rpc.h>
 #include <stdlib.h>

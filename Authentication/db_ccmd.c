@@ -1,3 +1,16 @@
+/********************************************************************
+ * db_ccmd.c
+ *
+ * Author: Raymond Weiming Luo
+ * CSCI 467 - Computer Networks II
+ *
+ * Client status handling over an ONC RPC network. Return to the 
+ * client-side the status from the server-side application 
+ * handling.
+ *
+ *******************************************************************/
+
+
 #include <rpc/rpc.h>
 #include <stdio.h>
 #define RPC CLNT

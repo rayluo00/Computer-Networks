@@ -1,3 +1,31 @@
+/********************************************************************
+ * db_client.c
+ *
+ * Author: Raymond Weiming Luo
+ * CSCI 467: Computer Networks II
+ *
+ * Client-side application for an ONC RPC program to recieve user
+ * commands to interact with the GDBM database. The program has
+ * a client handle used to track the different clients.
+ *
+ * Client commands:
+ *    mk [DATABASE NAME]: 
+ *        Create a new GDBM database. Given the database name.
+ *
+ *    open [DATABSE NAME]: 
+ *        Open the GDBM database. Given the database name.
+ *
+ *    put NAME,CITY,STATE,TYPE: 
+ *        Add the NAME as a key into the GDBM database with the 
+ *        values seperated by commas from the database that is 
+ *        opened.
+ *
+ *    get NAME,CITY,STATE,TYPE: 
+ *        Get the data that are stored as values from the key 
+ *        NAME in the GDBM database that is opened.
+ *
+ *******************************************************************/
+
 #include <rpc/rpc.h>
 #include <stdlib.h>
 #include <stdio.h>

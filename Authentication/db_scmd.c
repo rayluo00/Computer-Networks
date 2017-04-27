@@ -1,3 +1,16 @@
+/********************************************************************
+ * db_scmd.c
+ *
+ * Author: Raymond Weiming Luo
+ * CSCI 467 - Computer Networks II
+ *
+ * RPC status handling for the commands that the client can call
+ * across the network from the server. The authentication step
+ * for the client accessing the server is handled in this file
+ * to mediate the UID and machine name of the client process.
+ *
+ *******************************************************************/
+
 #include <rpc/rpc.h>
 #define RPC SVC
 #include "database.h"
