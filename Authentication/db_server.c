@@ -115,18 +115,37 @@ int db_get (struct location_params args)
 
 	datum key;
 	datum data;
+	datum nextKey;
 
-	key.dptr = args.NAME;
-	key.dsize = strlen(args.NAME) + 1;
+	if (!strncmp(args.NAME, "*", 1)) {
+		key = gdbm_firstkey(DATABASE);
 
-	data = gdbm_fetch(DATABASE, key);
+		while (key.dptr) {
+			data = gdbm_fetch(DATABASE, key);
 
-	if (data.dptr == NULL) {
-		fprintf(stderr, "error: Unable to fetch key %s\n", key);
-		return -1;
+			if (data.dptr == NULL) {
+				fprintf(stderr, "error: Unable to fecth key %s\n", key);
+				return -1;
+			}
+
+			printf("GET KEY: %s | DATA: %s\n", key.dptr, data.dptr);
+
+			nextKey = gdbm_nextkey(DATABASE, key);
+			key = nextKey;
+		}
+	} else {
+		key.dptr = args.NAME;
+		key.dsize = strlen(args.NAME) + 1;
+
+		data = gdbm_fetch(DATABASE, key);
+
+		if (data.dptr == NULL) {
+			fprintf(stderr, "error: Unable to fetch key %s\n", key);
+			return -1;
+		}
+
+		printf("GET KEY: %s | DATA: %s\n", key.dptr, data.dptr);
 	}
-
-	printf("GET KEY: %s | DATA: %s\n", key.dptr, data.dptr);
 
 	return 0;
 }
