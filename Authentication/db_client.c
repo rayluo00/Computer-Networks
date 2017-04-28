@@ -68,24 +68,6 @@ int db_put(struct location_params params);
 int db_get(struct location_params params);
 int db_auth();
 
-int encode (int clientID, int option)
-{
-    return (clientID << 8) + option;
-}
-
-ret_val decode (int code)
-{
-    ret_val ret;
-
-    ret.svr_mode = code & MASK;
-    code = code >> 4;
-    ret.error = code & MASK;
-    code = code >> 4;
-    ret.status = code & MASK;
-
-    return ret;
-}
-
 char **parse_args (char *line)
 {
 	int x = 0;

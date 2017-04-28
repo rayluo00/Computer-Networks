@@ -24,20 +24,35 @@
 #include <rpc/auth.h>
 #include <rpc/auth_unix.h>
 
+// GDBM Database
 GDBM_FILE DATABASE;
 
+/********************************************************************
+ * Method called from the client to pass the client handle for 
+ * authenticating which will be intercepted from the db_scmd.c file
+ * to verify the UIDs and machine name.
+ */
 int db_auth ()
 {
 	printf("AUTHENTICATE client\n");
 	return 0;
 }
 
+/********************************************************************
+ * Method to state that the database program has started on the 
+ * server side.
+ */
 int db_start () 
 {
     printf("START database\n");
     return 0;
 }
 
+/********************************************************************
+ * Given a struct of args to create and initialize the GDBM database. 
+ * The struct contains the name for the newly created database and
+ * type [identified as an integer] for the database.
+ */
 int db_create (struct db_args args)
 {
 	printf("CREATE %d:%s\n", args.DB_TYPE, args.DB_NAME);
@@ -54,6 +69,11 @@ int db_create (struct db_args args)
 	return 0;
 }
 
+/********************************************************************
+ * Open the database and allow for fetching or storing data from or
+ * into the database.
+ */
+
 int db_open (struct db_args args)
 {
 	printf("OPEN %d:%s\n", args.DB_TYPE, args.DB_NAME);
@@ -68,6 +88,9 @@ int db_open (struct db_args args)
 	return 0;
 }
 
+/********************************************************************
+ * Close the currently opened database.
+ */
 int db_close () 
 {
 	if (DATABASE == NULL) {
@@ -81,6 +104,10 @@ int db_close ()
 	return 0;
 }
 
+/********************************************************************
+ * Put data into the database. Where the name is the unique key and 
+ * the values contains the city, state and type of location.
+ */
 int db_put (struct location_params args)
 {
 	printf("PUT %s| %s | %s | %s\n", args.NAME, args.CITY, args.STATE, args.TYPE);
@@ -118,6 +145,11 @@ int db_put (struct location_params args)
 	return 0;
 }
 
+/********************************************************************
+ * Get data from the database given the name of the key, which is the
+ * name of the location. The user can fecth all the data in the
+ * database if provided the '*' character as the key.
+ */
 int db_get (struct location_params args)
 {
 	printf("GET %s | %s | %s | %s\n", args.NAME, args.CITY, args.STATE, args.TYPE);
