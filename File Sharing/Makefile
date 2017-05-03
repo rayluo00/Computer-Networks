@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -g
+CFLAGS = -g -lm
 OFLAGS = -g -o
 SEED_OBJS = seed.o
 LEECH_OBJS = leech.o
