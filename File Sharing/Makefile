@@ -1,12 +1,12 @@
 CC = gcc
-CFLAGS = -g -lm
-OFLAGS = -g -o
+CFLAGS = -g -c
+OFLAGS = -lm -o
 SEED_OBJS = seed.o
 LEECH_OBJS = leech.o
 
-make: $(SEED_OBJS) $(LEECH_OBJS)
-	$(CC) $(CFLAGS) -o seed $(SEED_OBJS)
-	$(CC) $(CFLAGS) -o leech $(LEECH_OBJS)
+make: seed.c leech.c
+	$(CC) $(CFLAGS) seed.c $(OFLAGS) $(SEED_OBJS)
+	$(CC) $(CFLAGS) leech.c $(OFLAGS) $(LEECH_OBJS)
 
 leech:
 	$(CC) $(CFLAGS) -o leech $(LEECH_OBJS)
