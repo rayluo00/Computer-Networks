@@ -16,4 +16,4 @@ run:
 	java -cp .:$(CLNT_JAR):$(COMMON_JAR):$(WS_JAR):$(LOG_JAR):$(SVR_JAR) db_client
 
 clean:
-	$(RM) *.o, svr , clnt , *~ , *.gch , *.class
+	$(RM) *.o, svr , *~ , *.gch , *.class
