@@ -31,7 +31,7 @@ public class db_client
 				command = inScanner.nextLine();
 				cmd = ParseCommand(command);
 
-				PerformCommand(cmd);
+				PerformCommand(server, cmd);
 			}
 
 		} catch (Exception exception) {
@@ -43,11 +43,6 @@ public class db_client
 	{
 		int i;
 		String[] cmd = command.split(" ");
-		String[] cmdArgs = cmd[1].split(",");
-
-		for (i = 0; i < cmdArgs.length; i++) {
-			cmd[i+1] = cmdArgs[i];
-		}
 
 		for (i = 0; i < cmd.length; i++) {
 			System.out.println("CMD["+i+"]: "+cmd[i]);
@@ -56,13 +51,36 @@ public class db_client
 		return cmd;
 	}
 
-	public static void PerformCommand(String[] cmd) 
+	public static void PerformCommand(XmlRpcClient server, String[] cmd) 
 	{
+		int serverStatus;
+		Object[] params;
+
 		if (cmd[0].equals("q")) {
 			System.exit(0);
 		}
-		else if (cmd[0].equals("get")) {
 
+		if (cmd.length < 2) {
+			System.out.println("error: Missing parameters.");
+			return;
 		}
-	}
-}
+
+		try {
+			
+			params = new Object[]{new String(cmd[1])};
+
+			if (cmd[0].equals("put")) {
+				serverStatus = (Integer) sever.execute("database.db_get", params);
+			}
+			else if (cmd[0].equals("get")) {
+				serverStatus = (Integer) server.execute("database.db_get", params);
+			}
+			else if (cmd[0].equals("open")) {
+				serverStatus = (Integer) sever.execute("database.db_open", params);
+			}
+			else if (cmd[0].equals("mk")) {
+				serverStatus = (Integer) sever.execute("database.db_create", params);
+			}
+		} catch (Exception exception) {
+			System.out.println("error: "+exception);
+		}
