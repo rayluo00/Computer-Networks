@@ -34,6 +34,11 @@ struct location_params fill_location_params (char *params) {
 	int i = 0;
 	int tok_len;
 
+	memset(name, '\0', sizeof(name));
+	memset(city, '\0', sizeof(city));
+	memset(state, '\0', sizeof(state));
+	memset(type, '\0', sizeof(type));
+
 	while ((token = strsep(&params, ",")) != NULL) {
 		//printf("TOKEN[%d]: %s\n", i, token);
 		tok_len = strlen(token);
@@ -70,6 +75,7 @@ struct location_params fill_location_params (char *params) {
 	loc_params.city = city;
 	loc_params.state = state;
 	loc_params.type = type;
+	loc_params.valid = 0;
 
 	return loc_params;
 }
@@ -179,7 +185,7 @@ static xmlrpc_value *db_put (xmlrpc_env *env,
 
 	loc_params = fill_location_params(input);
 
-	if (loc_params.valid == -1) {
+	if (loc_params.valid < 0) {
 		fprintf(stderr, "error: Invalid location struct creation.\n");
 		return xmlrpc_build_value(env, "i", -1);
 	}
@@ -213,7 +219,7 @@ static xmlrpc_value *db_get (xmlrpc_env *env,
 
 	loc_params = fill_location_params(input);
 
-	if (loc_params.valid == -1) {
+	if (loc_params.valid < 0) {
 		fprintf(stderr, "error: Invalid location struct creation.\n");
 		return xmlrpc_build_value(env, "i", -1);
 	}
