@@ -3,31 +3,75 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <ctype.h>
+#include <string.h>
 #include <xmlrpc-c/base.h>
 #include <xmlrpc-c/server.h>
 #include <xmlrpc-c/server_abyss.h>
 #include <gdbm.h>
 
+struct location_params {
+	char *name;
+	char *city;
+	char *state;
+	char *type;
+	int valid;
+};
+
 // Gdbm Database
 GDBM_FILE DATABASE;
 
-static xmlrpc_value *sample_add (xmlrpc_env *env, 
-								 xmlrpc_value *param_array,
-								 void *server_info,
-								 void *channel_info)
-{
-	xmlrpc_int32 x, y, z;
+/********************************************************************
+ *
+ */
+struct location_params fill_location_params (char *params) {
+	struct location_params loc_params;
+	char *token;
+	char name[256];
+	char city[256];
+	char state[256];
+	char type[256];
+	int i = 0;
+	int tok_len;
 
-	xmlrpc_decompose_value(env, param_array, "(ii)", &x, &y);
-	if (env->fault_occurred) {
-		return NULL;
+	while ((token = strsep(&params, ",")) != NULL) {
+		//printf("TOKEN[%d]: %s\n", i, token);
+		tok_len = strlen(token);
+
+		switch (i) {
+			case 0:
+				strncpy(name, token, tok_len);
+				break;
+			case 1:
+				strncpy(city, token, tok_len);
+				break;
+			case 2:
+				strncpy(state, token, tok_len);
+				break;
+			case 3:
+				strncpy(type, token, tok_len);
+				break;
+			default:
+				fprintf(stderr, "error: Invalid location params %s\n", token);
+				loc_params.valid = -1;
+				return loc_params;
+		}
+
+		i++;
 	}
 
-	z = x + y;
+	if (i != 4) {
+		loc_params.valid = -1;
+		fprintf(stderr, "error: Missing location parameters.\n");
+		return loc_params;
+	}
 
-	printf("%d[x] + %d[y] = %d[z]\n", x, y, z);
+	loc_params.name = name;
+	loc_params.city = city;
+	loc_params.state = state;
+	loc_params.type = type;
 
-	return xmlrpc_build_value(env, "i", z);
+	return loc_params;
 }
 
 /********************************************************************
@@ -42,10 +86,20 @@ static xmlrpc_value *db_create (xmlrpc_env *env,
 
 	xmlrpc_decompose_value(env, param_array, "(s)", &input);
 	if (env->fault_occurred) {
-		return NULL;
+		fprintf(stderr, "error: Failed to decompose XML value.\n");
+		return xmlrpc_build_value(env, "i", -1);
 	}
 
 	printf("CREATE %s\n", input);
+
+	DATABASE = gdbm_open(input, 0, GDBM_WRCREAT, 0644, 0);
+
+	if (DATABASE == NULL) {
+		fprintf(stderr, "error: Failed to create GDBM.\n");
+		return xmlrpc_build_value(env, "i", -1);
+	}
+
+	gdbm_close(DATABASE);
 
 	return xmlrpc_build_value(env, "i", 0);
 }
@@ -62,10 +116,17 @@ static xmlrpc_value *db_open (xmlrpc_env *env,
 
 	xmlrpc_decompose_value(env, param_array, "(s)", &input);
 	if (env->fault_occurred) {
-		return NULL;
+		fprintf(stderr, "error: Failed to decompose XML value.\n");
+		return xmlrpc_build_value(env, "i", -1);
 	}
 
 	printf("OPEN %s\n", input);
+
+	DATABASE = gdbm_open(input, 0, GDBM_WRITER, 0644, 0);
+
+	if (DATABASE == NULL) {
+		return xmlrpc_build_value(env, "i", -1);
+	}
 
 	return xmlrpc_build_value(env, "i", 0);
 }
@@ -82,10 +143,14 @@ static xmlrpc_value *db_close (xmlrpc_env *env,
 
 	xmlrpc_decompose_value(env, param_array, "(s)", &input);
 	if (env->fault_occurred) {
-		return NULL;
+		fprintf(stderr, "error: Failed to decompose XML value.\n");
+		return xmlrpc_build_value(env, "i", -1);
 	}
 
 	printf("CLOSE %s\n", input);
+
+	gdbm_close(DATABASE);
+	DATABASE = NULL;
 
 	return xmlrpc_build_value(env, "i", 0);
 }
@@ -99,13 +164,27 @@ static xmlrpc_value *db_put (xmlrpc_env *env,
 							 void *channel_info)
 {
 	char *input;
+	struct location_params loc_params;
+
+	if (DATABASE == NULL) {
+		fprintf(stderr, "error: No opened database.\n");
+		return xmlrpc_build_value(env, "i", -1);
+	}
 
 	xmlrpc_decompose_value(env, param_array, "(s)", &input);
 	if (env->fault_occurred) {
-		return NULL;
+		fprintf(stderr, "error: Failed to decompose XML value.\n");
+		return xmlrpc_build_value(env, "i", -1);
 	}
 
-	printf("PUT %s\n", input);
+	loc_params = fill_location_params(input);
+
+	if (loc_params.valid == -1) {
+		fprintf(stderr, "error: Invalid location struct creation.\n");
+		return xmlrpc_build_value(env, "i", -1);
+	}
+
+	printf("PUT %s | %s,%s,%s,%s\n", input, loc_params.name, loc_params.city, loc_params.state, loc_params.type);
 
 	return xmlrpc_build_value(env, "i", 0);
 }
@@ -119,13 +198,27 @@ static xmlrpc_value *db_get (xmlrpc_env *env,
 							 void *channel_info)
 {
 	char *input;
+	struct location_params loc_params;
+
+	if (DATABASE == NULL) {
+		fprintf(stderr, "error: No opened database.\n");
+		return xmlrpc_build_value(env, "i", -1);
+	}
 
 	xmlrpc_decompose_value(env, param_array, "(s)", &input);
 	if (env->fault_occurred) {
-		return NULL;
+		fprintf(stderr, "error: Failed to decompose XML value.\n");
+		return xmlrpc_build_value(env, "i", -1);
 	}
 
-	printf("GET %s\n", input);
+	loc_params = fill_location_params(input);
+
+	if (loc_params.valid == -1) {
+		fprintf(stderr, "error: Invalid location struct creation.\n");
+		return xmlrpc_build_value(env, "i", -1);
+	}
+	
+	printf("GET %s | %s,%s,%s,%s\n", input, loc_params.name, loc_params.city, loc_params.state, loc_params.type);
 
 	return xmlrpc_build_value(env, "i", 0);
 }

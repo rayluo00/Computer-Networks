@@ -8,8 +8,8 @@ LOG_JAR = "./apache-xmlrpc-3.1.3/lib/commons-logging-1.1.jar"
 SVR_JAR = "./apache-xmlrpc-3.1.3/lib/xmlrpc-server-3.1.3.jar"
 
 make:
-	gcc -c $(INCLUDES) db_server.c
-	gcc -o svr $(LIBS) db_server.o
+	gcc -g -lgdbm -c $(INCLUDES) db_server.c
+	gcc -g -lgdbm -o svr $(LIBS) db_server.o
 	javac -Xlint -cp $(CLNT_JAR):$(COMMON_JAR):$(WS_JAR):$(LOG_JAR):$(SVR_JAR) db_client.java
 
 run:

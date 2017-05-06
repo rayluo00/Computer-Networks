@@ -36,6 +36,13 @@ public class db_client
 				command = inScanner.nextLine();
 
 				cmd = ParseCommand(command);
+
+				if (cmd[0].equals("q")) {
+					Object[] params = new Object[]{new String("")};
+					server.execute("database.db_close", params);
+					System.exit(0);
+				}
+
 				PerformCommand(server, cmd);
 			}
 
@@ -51,10 +58,6 @@ public class db_client
 
 		for (i = 0; i < cmd.length; i++) {
 			System.out.println("CMD["+i+"]: "+cmd[i]);
-		}
-
-		if (cmd[0].equals("q")) {
-			System.exit(0);
 		}
 
 		return cmd;
@@ -75,7 +78,7 @@ public class db_client
 			params = new Object[]{new String(cmd[1])};
 
 			if (cmd[0].equals("put")) {
-				serverStatus = (Integer) server.execute("database.db_get", params);
+				serverStatus = (Integer) server.execute("database.db_put", params);
 			}
 			else if (cmd[0].equals("get")) {
 				serverStatus = (Integer) server.execute("database.db_get", params);
@@ -89,6 +92,8 @@ public class db_client
 			}
 			else if (cmd[0].equals("mk")) {
 				serverStatus = (Integer) server.execute("database.db_create", params);
+			} else {
+				System.out.println("error: Invalid command.");
 			}
 		} catch (Exception exception) {
 			System.out.println("error: "+exception);
