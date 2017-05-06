@@ -13,7 +13,7 @@ make:
 	javac -Xlint -cp $(CLNT_JAR):$(COMMON_JAR):$(WS_JAR):$(LOG_JAR):$(SVR_JAR) db_client.java
 
 run:
-	java -cp .:$(CLNT_JAR):$(COMMON_JAR):$(WS_JAR):$(LOG_JAR):$(SVR_JAR) db_client
+	java -cp .:$(CLNT_JAR):$(COMMON_JAR):$(WS_JAR):$(LOG_JAR):$(SVR_JAR) db_client 46713
 
 clean:
 	$(RM) *.o, svr , *~ , *.gch , *.class

@@ -44,6 +44,7 @@ CLIENT *handle;
 struct db_args DB_INFO;
 struct location_params LOCATION_DATA;
 
+/* Server return status */
 typedef struct ret {
     int svr_mode;
     int status;
@@ -68,6 +69,12 @@ int db_put(struct location_params params);
 int db_get(struct location_params params);
 int db_auth();
 
+/********************************************************************
+ * Return the user's command line and parse it to split the command
+ * from the parameters, if there is any. Return a character array
+ * where index 0 is the database command and index 1 is the parameters
+ * to fill into the database.
+ */
 char **parse_args (char *line)
 {
 	int x = 0;
@@ -119,6 +126,11 @@ char **parse_args (char *line)
 	return cmd;
 }
 
+/********************************************************************
+ * Fill in the struct when creating a new database. Database struct
+ * contains the name and type of database. If no type is given the
+ * the default type is '1'.
+ */
 struct db_args fill_db_struct (char **cmd)
 {
 	struct db_args args;
@@ -141,6 +153,10 @@ struct db_args fill_db_struct (char **cmd)
 	return args;
 }
 
+/********************************************************************
+ * Clean up code for the malloc char array when parsing the user's
+ * command line.
+ */
 void cleanup (char *name, char *city, char *state, char *type)
 {
 	free(name);
@@ -149,6 +165,12 @@ void cleanup (char *name, char *city, char *state, char *type)
 	free(type);
 }
 
+/********************************************************************
+ * Fill the location struct associated with the user's command line
+ * parameters. The location struct will hold information about the 
+ * database attributes such as the name, city, state and type of
+ * location.
+ */
 struct location_params fill_location_params (char **cmd)
 {
 	struct location_params params;
@@ -238,6 +260,11 @@ struct location_params fill_location_params (char **cmd)
 	return params;
 }
 
+/********************************************************************
+ * Loop to constantly get the user's command from stdin until the
+ * user enters 'q' to quit the program. Perform specified server-side
+ * database calls depending on the user's command.
+ */
 int get_cmd (int clientID)
 {
     char buffer[1024];
@@ -302,6 +329,10 @@ int get_cmd (int clientID)
 	return 0;	
 }
 
+/********************************************************************
+ * Get the status of the server-side database that was return for
+ * various error checks.
+ */
 int get_status (ret_val ret)
 {
     int retVal = 0;
@@ -327,6 +358,13 @@ int get_status (ret_val ret)
     return retVal;
 }
 
+/********************************************************************
+ * Main functiont o set up the client-side connection with the
+ * server-side database. Connection is ONC RPC orriented and will
+ * call a server-side authentication call to check if the client
+ * can connect to the database. Default to a localhost unless 
+ * specified by the program arguments 'argv[1]'.
+ */
 int main (int argc, char **argv) 
 {
     int progNum = 24670113;
