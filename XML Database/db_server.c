@@ -105,7 +105,7 @@ static xmlrpc_value *db_put (xmlrpc_env *env,
 		return NULL;
 	}
 
-	printf("CREATE %s\n", input);
+	printf("PUT %s\n", input);
 
 	return xmlrpc_build_value(env, "i", 0);
 }
@@ -125,11 +125,24 @@ static xmlrpc_value *db_get (xmlrpc_env *env,
 		return NULL;
 	}
 
-	printf("CREATE %s\n", input);
+	printf("GET %s\n", input);
 
 	return xmlrpc_build_value(env, "i", 0);
 }
 
+/********************************************************************
+ *
+ */
+void register_xmlrpc (xmlrpc_env env, xmlrpc_registry *registry_ptr, 
+					  struct xmlrpc_method_info3 method)
+{
+	xmlrpc_registry_add_method3(&env, registry_ptr, &method);
+
+	if (env.fault_occurred) {
+		fprintf(stderr, "error: Unbale to add XML method.\n");
+		exit(EXIT_FAILURE);
+	}
+}
 
 /********************************************************************
  *
@@ -141,8 +154,6 @@ int main (int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	// TODO Create init method for XML methods
-
 	struct xmlrpc_method_info3 const open_method = {
 		"database.db_open",
 		&db_open,
@@ -153,6 +164,20 @@ int main (int argc, char **argv)
 		&db_close,
 	};
 
+	struct xmlrpc_method_info3 const get_method = {
+		"database.db_get",
+		&db_get,
+	};
+
+	struct xmlrpc_method_info3 const put_method = {
+		"database.db_put",
+		&db_put,
+	};
+
+	struct xmlrpc_method_info3 const create_method = {
+		"database.db_create",
+		&db_create,
+	};
 
 	xmlrpc_server_abyss_parms server_parms;
 	xmlrpc_registry *registry_ptr;
@@ -172,18 +197,19 @@ int main (int argc, char **argv)
 	}
 
 	// TODO Create method to automatically register the XML methods
+	/*
 	xmlrpc_registry_add_method3(&env, registry_ptr, &open_method);
 	if (env.fault_occurred) {
 		fprintf(stderr, "error: Unbale to add XML method.\n");
 		exit(EXIT_FAILURE);
 	}
+	*/
 
-	xmlrpc_registry_add_method3(&env, registry_ptr, &close_method);
-	if (env.fault_occurred) {
-		fprintf(stderr, "error: Unbale to add XML method.\n");
-		exit(EXIT_FAILURE);
-	}
-
+	register_xmlrpc(env, registry_ptr, open_method);
+	register_xmlrpc(env, registry_ptr, close_method);
+	register_xmlrpc(env, registry_ptr, create_method);
+	register_xmlrpc(env, registry_ptr, put_method);
+	register_xmlrpc(env, registry_ptr, get_method);
 
 	server_parms.config_file_name = NULL;
 	server_parms.registryP = registry_ptr;
