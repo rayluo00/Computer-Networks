@@ -6,6 +6,10 @@
 #include <xmlrpc-c/base.h>
 #include <xmlrpc-c/server.h>
 #include <xmlrpc-c/server_abyss.h>
+#include <gdbm.h>
+
+// Gdbm Database
+GDBM_FILE DATABASE;
 
 static xmlrpc_value *sample_add (xmlrpc_env *env, 
 								 xmlrpc_value *param_array,
@@ -26,12 +30,129 @@ static xmlrpc_value *sample_add (xmlrpc_env *env,
 	return xmlrpc_build_value(env, "i", z);
 }
 
+/********************************************************************
+ *
+ */
+static xmlrpc_value *db_create (xmlrpc_env *env, 
+								xmlrpc_value *param_array,
+								void *server_info,
+								void *channel_info)
+{
+	char *input;
+
+	xmlrpc_decompose_value(env, param_array, "(s)", &input);
+	if (env->fault_occurred) {
+		return NULL;
+	}
+
+	printf("CREATE %s\n", input);
+
+	return xmlrpc_build_value(env, "i", 0);
+}
+
+/********************************************************************
+ *
+ */
+static xmlrpc_value *db_open (xmlrpc_env *env, 
+							  xmlrpc_value *param_array,
+							  void *server_info,
+							  void *channel_info)
+{
+	char *input;
+
+	xmlrpc_decompose_value(env, param_array, "(s)", &input);
+	if (env->fault_occurred) {
+		return NULL;
+	}
+
+	printf("OPEN %s\n", input);
+
+	return xmlrpc_build_value(env, "i", 0);
+}
+
+/********************************************************************
+ *
+ */
+static xmlrpc_value *db_close (xmlrpc_env *env, 
+							   xmlrpc_value *param_array,
+							   void *server_info,
+							   void *channel_info)
+{
+	char *input;
+
+	xmlrpc_decompose_value(env, param_array, "(s)", &input);
+	if (env->fault_occurred) {
+		return NULL;
+	}
+
+	printf("CLOSE %s\n", input);
+
+	return xmlrpc_build_value(env, "i", 0);
+}
+
+/********************************************************************
+ *
+ */
+static xmlrpc_value *db_put (xmlrpc_env *env, 
+							 xmlrpc_value *param_array,
+							 void *server_info,
+							 void *channel_info)
+{
+	char *input;
+
+	xmlrpc_decompose_value(env, param_array, "(s)", &input);
+	if (env->fault_occurred) {
+		return NULL;
+	}
+
+	printf("CREATE %s\n", input);
+
+	return xmlrpc_build_value(env, "i", 0);
+}
+
+/********************************************************************
+ *
+ */
+static xmlrpc_value *db_get (xmlrpc_env *env, 
+							 xmlrpc_value *param_array,
+							 void *server_info,
+							 void *channel_info)
+{
+	char *input;
+
+	xmlrpc_decompose_value(env, param_array, "(s)", &input);
+	if (env->fault_occurred) {
+		return NULL;
+	}
+
+	printf("CREATE %s\n", input);
+
+	return xmlrpc_build_value(env, "i", 0);
+}
+
+
+/********************************************************************
+ *
+ */
 int main (int argc, char **argv)
 {
-	struct xmlrpc_method_info3 const method_info = {
-		"sample.add",
-		&sample_add,
+	if (argc < 2) {
+		fprintf(stderr, "error: Missing port number.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	// TODO Create init method for XML methods
+
+	struct xmlrpc_method_info3 const open_method = {
+		"database.db_open",
+		&db_open,
 	};
+
+	struct xmlrpc_method_info3 const close_method = {
+		"database.db_close",
+		&db_close,
+	};
+
 
 	xmlrpc_server_abyss_parms server_parms;
 	xmlrpc_registry *registry_ptr;
@@ -50,11 +171,19 @@ int main (int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	xmlrpc_registry_add_method3(&env, registry_ptr, &method_info);
+	// TODO Create method to automatically register the XML methods
+	xmlrpc_registry_add_method3(&env, registry_ptr, &open_method);
 	if (env.fault_occurred) {
 		fprintf(stderr, "error: Unbale to add XML method.\n");
 		exit(EXIT_FAILURE);
 	}
+
+	xmlrpc_registry_add_method3(&env, registry_ptr, &close_method);
+	if (env.fault_occurred) {
+		fprintf(stderr, "error: Unbale to add XML method.\n");
+		exit(EXIT_FAILURE);
+	}
+
 
 	server_parms.config_file_name = NULL;
 	server_parms.registryP = registry_ptr;

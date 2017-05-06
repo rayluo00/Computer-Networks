@@ -7,14 +7,19 @@ public class db_client
 {
 	public static void main (String[] args) 
 	{
+		String port = "46713";
 		int serverStatus;
 		String command;
 		String[] cmd;
 		Scanner inScanner = new Scanner(System.in);
 
 		try {
+			if (args.length > 0) {
+				port = args[0];
+			}
+
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
-			config.setServerURL(new URL("http://localhost:"+args[1]+"/RPC2"));
+			config.setServerURL(new URL("http://localhost:"+port+"/RPC2"));
 			XmlRpcClient server = new XmlRpcClient();
 			server.setConfig(config);
 
@@ -29,8 +34,8 @@ public class db_client
 			while (true) {
 				System.out.print("% ");
 				command = inScanner.nextLine();
-				cmd = ParseCommand(command);
 
+				cmd = ParseCommand(command);
 				PerformCommand(server, cmd);
 			}
 
@@ -48,17 +53,17 @@ public class db_client
 			System.out.println("CMD["+i+"]: "+cmd[i]);
 		}
 
+		if (cmd[0].equals("q")) {
+			System.exit(0);
+		}
+
 		return cmd;
 	}
 
 	public static void PerformCommand(XmlRpcClient server, String[] cmd) 
 	{
-		int serverStatus;
+		int serverStatus = 0;
 		Object[] params;
-
-		if (cmd[0].equals("q")) {
-			System.exit(0);
-		}
 
 		if (cmd.length < 2) {
 			System.out.println("error: Missing parameters.");
@@ -70,17 +75,23 @@ public class db_client
 			params = new Object[]{new String(cmd[1])};
 
 			if (cmd[0].equals("put")) {
-				serverStatus = (Integer) sever.execute("database.db_get", params);
+				serverStatus = (Integer) server.execute("database.db_get", params);
 			}
 			else if (cmd[0].equals("get")) {
 				serverStatus = (Integer) server.execute("database.db_get", params);
 			}
 			else if (cmd[0].equals("open")) {
-				serverStatus = (Integer) sever.execute("database.db_open", params);
+				serverStatus = (Integer) server.execute("database.db_open", params);
+			}
+			else if (cmd[0].equals("close")) {
+				serverStatus = (Integer) server.execute("database.db_close", params);
+
 			}
 			else if (cmd[0].equals("mk")) {
-				serverStatus = (Integer) sever.execute("database.db_create", params);
+				serverStatus = (Integer) server.execute("database.db_create", params);
 			}
 		} catch (Exception exception) {
 			System.out.println("error: "+exception);
 		}
+	}
+}
