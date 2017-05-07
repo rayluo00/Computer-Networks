@@ -40,7 +40,7 @@ struct location_params fill_location_params (char *params) {
 	memset(type, '\0', sizeof(type));
 
 	while ((token = strsep(&params, ",")) != NULL) {
-		//printf("TOKEN[%d]: %s\n", i, token);
+		printf("TOKEN[%d]: %s\n", i, token);
 		tok_len = strlen(token);
 
 		switch (i) {
@@ -169,8 +169,13 @@ static xmlrpc_value *db_put (xmlrpc_env *env,
 							 void *server_info,
 							 void *channel_info)
 {
+	datum key;
+	datum data;
+	char data_buf[1024];
 	char *input;
 	struct location_params loc_params;
+
+	memset(data_buf, '\0', 1024);
 
 	if (DATABASE == NULL) {
 		fprintf(stderr, "error: No opened database.\n");
@@ -190,7 +195,23 @@ static xmlrpc_value *db_put (xmlrpc_env *env,
 		return xmlrpc_build_value(env, "i", -1);
 	}
 
-	printf("PUT %s | %s,%s,%s,%s\n", input, loc_params.name, loc_params.city, loc_params.state, loc_params.type);
+	key.dptr = loc_params.name;
+	key.dsize = strlen(loc_params.name) + 1;
+
+	if (snprintf(data_buf, 1024, "%s,%s,%s", loc_params.city, loc_params.state, loc_params.type) < 0) {
+		fprintf(stderr, "error: snprintf failed to create data.\n");
+		return xmlrpc_build_value(env, "i", -1);
+	}
+
+	printf("PUT: %s\n", data_buf);
+
+	data.dptr = data_buf;
+	data.dsize = 1025;
+
+	if (gdbm_store(DATABASE, key, data, GDBM_INSERT)) {
+		fprintf(stderr, "error: Unable to store key %s.\n", input);
+		return xmlrpc_build_value(env, "i", -1);
+	}
 
 	return xmlrpc_build_value(env, "i", 0);
 }
@@ -203,6 +224,9 @@ static xmlrpc_value *db_get (xmlrpc_env *env,
 							 void *server_info,
 							 void *channel_info)
 {
+	datum key;
+	datum data;
+	datum nextKey;
 	char *input;
 	struct location_params loc_params;
 
@@ -224,7 +248,37 @@ static xmlrpc_value *db_get (xmlrpc_env *env,
 		return xmlrpc_build_value(env, "i", -1);
 	}
 	
-	printf("GET %s | %s,%s,%s,%s\n", input, loc_params.name, loc_params.city, loc_params.state, loc_params.type);
+	//printf("GET %s | %s,%s,%s,%s\n", input, loc_params.name, loc_params.city, loc_params.state, loc_params.type);
+
+	if (!strncmp(input, "*", 1)) {
+		key = gdbm_firstkey(DATABASE);
+
+		while (key.dptr) {
+			data = gdbm_fetch(DATABASE, key);
+
+			if (data.dptr == NULL) {
+				fprintf(stderr, "error: Unable to fetch key %s.\n", key);
+				return xmlrpc_build_value(env, "i", -1);
+			}
+
+			printf("GET: %s\n", data.dptr);
+
+			nextKey = gdbm_nextkey(DATABASE, key);
+			key = nextKey;
+		}
+	} else {
+		key.dptr = input;
+		key.dsize = strlen(input) + 1;
+
+		data = gdbm_fetch(DATABASE, key);
+
+		if (data.dptr == NULL) {
+			fprintf(stderr, "error: Unable to fetch key %s.\n", key);
+			return xmlrpc_build_value(env, "i", -1);
+		}
+
+		printf("GET: %s\n");
+	}
 
 	return xmlrpc_build_value(env, "i", 0);
 }
