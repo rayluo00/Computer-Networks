@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <math.h>
 #include <sys/types.h>
@@ -30,11 +31,6 @@ int main (int argc, char **argv)
 	system("exec rm -r ./tmp/*");	
 	sock = create_socket(PORT);
 
-	if (listen(sock, 1) < 0) {
-		fprintf(stderr, "error: Unable to listen onto socket.\n");
-		exit(EXIT_FAILURE);
-	}
-
 	FD_ZERO(&active_fd_set);
 	FD_SET(sock, &active_fd_set);
 
@@ -50,6 +46,7 @@ int main (int argc, char **argv)
 			if (FD_ISSET(i, &read_fd_set)) {
 				// Accepting a new connection
 				if (i == sock) {
+					printf("ACCPETING SOCKET\n");
 					int new_sock;
 
 					size = sizeof(sock_info);
@@ -65,7 +62,7 @@ int main (int argc, char **argv)
 				// Data from an established connection
 				else {
 					if (read(i, buffer, sizeof(buffer)) > 0) {
-						printf("CLIENT: %s\n", buffer);
+						printf("SERVER: %s\n", buffer);
 					} else {
 						close(i);
 					}
@@ -74,7 +71,7 @@ int main (int argc, char **argv)
 		}
 	}
 
-	// NOTE: Functions for splitting and mergeing a text file to distribute.
+	// NOTE: Methods for splitting and merging a txt file.
 	//split_file(argc, argv);
 	//merge_files(3);
 
@@ -86,10 +83,21 @@ int create_socket (int port)
 	int flag = 1;
 	int sock;
 	struct sockaddr_in sock_info;
+	struct hostent *host_table_ptr;
+	struct protoent *protocol_table_ptr;
+
+	memset((char *)&sock_info, 0, sizeof(sock_info));
+	sock_info.sin_family = AF_INET;
+	sock_info.sin_addr.s_addr = INADDR_ANY;
+	sock_info.sin_port = htons((u_short)port);
+
+	if (((long int)(protocol_table_ptr = getprotobyname("tcp"))) == 0) {
+		fprintf(stderr, "");
+		exit(EXIT_FAILURE);
+	}
 
 	// Create a new socket.
-	sock = socket(PF_INET, SOCK_STREAM, 0);
-	
+	sock = socket(PF_INET, SOCK_STREAM, protocol_table_ptr->p_proto);
 	if (sock < 0) {
 		fprintf(stderr, "error: Unable to create socket.\n");
 		exit(EXIT_FAILURE);
@@ -102,13 +110,13 @@ int create_socket (int port)
 		exit(EXIT_FAILURE);
 	}
 
-	sock_info.sin_family = AF_INET;
-	sock_info.sin_port = htons(port);
-	sock_info.sin_addr.s_addr = INADDR_ANY;
-
-	if (bind(sock, (struct sockaddr *) &sock_info, 
-		sizeof(sock_info)) < 0) {
+	if (bind(sock, (struct sockaddr *)&sock_info, sizeof(sock_info)) < 0) {
 		fprintf(stderr, "error: Server bind failed.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (listen(sock, 12) < 0) {
+		fprintf(stderr, "error: Unable to listen onto socket.\n");
 		exit(EXIT_FAILURE);
 	}
 
