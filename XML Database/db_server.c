@@ -27,17 +27,12 @@ GDBM_FILE DATABASE;
 struct location_params fill_location_params (char *params) {
 	struct location_params loc_params;
 	char *token;
-	char name[256];
-	char city[256];
-	char state[256];
-	char type[256];
+	char *name;
+	char *city;
+	char *state;
+	char *type;
 	int i = 0;
 	int tok_len;
-
-	memset(name, '\0', sizeof(name));
-	memset(city, '\0', sizeof(city));
-	memset(state, '\0', sizeof(state));
-	memset(type, '\0', sizeof(type));
 
 	while ((token = strsep(&params, ",")) != NULL) {
 		printf("TOKEN[%d]: %s\n", i, token);
@@ -45,16 +40,44 @@ struct location_params fill_location_params (char *params) {
 
 		switch (i) {
 			case 0:
-				strncpy(name, token, tok_len);
+				name = (char *) malloc(sizeof(char *) * tok_len);
+
+				if (name == NULL) {
+					loc_params.valid = -1;
+					return loc_params;
+				}
+
+				strcpy(name, token);
 				break;
 			case 1:
-				strncpy(city, token, tok_len);
+				city = (char *) malloc(sizeof(char *) * tok_len);
+
+				if (city == NULL) {
+					loc_params.valid = -1;
+					return loc_params;
+				}
+
+				strcpy(city, token);
 				break;
 			case 2:
-				strncpy(state, token, tok_len);
+				state = (char *) malloc(sizeof(char *) * tok_len);
+
+				if (state == NULL) {
+					loc_params.valid = -1;
+					return loc_params;
+				}
+
+				strcpy(state, token);
 				break;
 			case 3:
-				strncpy(type, token, tok_len);
+				type = (char *) malloc(sizeof(char *) * tok_len);
+
+				if (type == NULL) {
+					loc_params.valid = -1;
+					return loc_params;
+				}
+
+				strcpy(type, token);
 				break;
 			default:
 				fprintf(stderr, "error: Invalid location params %s\n", token);
@@ -171,6 +194,7 @@ static xmlrpc_value *db_put (xmlrpc_env *env,
 {
 	datum key;
 	datum data;
+	int print_ret;
 	char data_buf[1024];
 	char *input;
 	struct location_params loc_params;
@@ -198,7 +222,11 @@ static xmlrpc_value *db_put (xmlrpc_env *env,
 	key.dptr = loc_params.name;
 	key.dsize = strlen(loc_params.name) + 1;
 
-	if (snprintf(data_buf, 1024, "%s,%s,%s", loc_params.city, loc_params.state, loc_params.type) < 0) {
+	printf("%s,%s,%s\n", loc_params.city, loc_params.state, loc_params.type);
+
+	print_ret = snprintf(data_buf, 1024, "%s,%s,%s", loc_params.city, loc_params.state, loc_params.type);
+
+	if (print_ret < 0) {
 		fprintf(stderr, "error: snprintf failed to create data.\n");
 		return xmlrpc_build_value(env, "i", -1);
 	}
@@ -267,8 +295,8 @@ static xmlrpc_value *db_get (xmlrpc_env *env,
 			key = nextKey;
 		}
 	} else {
-		key.dptr = input;
-		key.dsize = strlen(input) + 1;
+		key.dptr = loc_params.name;
+		key.dsize = strlen(loc_params.name) + 1;
 
 		data = gdbm_fetch(DATABASE, key);
 
