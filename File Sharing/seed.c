@@ -18,7 +18,7 @@ int create_socket(int port);
 int main (int argc, char **argv)
 {
 	int i, size;
-	int sock;
+	int sock, sock2;
 	char buffer[1024];
 	fd_set read_fd_set, active_fd_set;
 	struct sockaddr_in sock_info;
@@ -30,27 +30,29 @@ int main (int argc, char **argv)
 
 	system("exec rm -r ./tmp/*");	
 	sock = create_socket(PORT);
+	sock2 = create_socket((PORT+1));
 
 	FD_ZERO(&active_fd_set);
 	FD_SET(sock, &active_fd_set);
+	FD_SET(sock2, &active_fd_set);
 
 	while (1) {
 		read_fd_set = active_fd_set;
 
 		if (select(FD_SETSIZE, &read_fd_set, NULL, NULL, NULL) < 0) {
-			fprintf(stderr, "error: Unable to select from the file descriptors.\n");
-			exit(EXIT_FAILURE);
+			fprintf(stderr, "error: Client disconnected.\n");
+			//exit(EXIT_FAILURE);
 		}
 
 		for (i = 0; i < FD_SETSIZE; i++) {
 			if (FD_ISSET(i, &read_fd_set)) {
 				// Accepting a new connection
-				if (i == sock) {
-					printf("ACCPETING SOCKET\n");
+				if (i == sock || i == sock2) {
+					printf("ACCPETING SOCKET %d\n", i);
 					int new_sock;
 
 					size = sizeof(sock_info);
-					new_sock = accept(sock, (struct sockaddr *) &sock_info, &size);
+					new_sock = accept(i, (struct sockaddr *) &sock_info, &size);
 
 					if (new_sock < 0) {
 						fprintf(stderr, "error: Unable to accept new socket.\n");

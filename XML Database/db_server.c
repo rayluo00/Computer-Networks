@@ -154,6 +154,7 @@ static xmlrpc_value *db_open (xmlrpc_env *env,
 	DATABASE = gdbm_open(input, 0, GDBM_WRITER, 0644, 0);
 
 	if (DATABASE == NULL) {
+		fprintf(stderr, "error: Unable to open database.\n");
 		return xmlrpc_build_value(env, "i", -1);
 	}
 
@@ -177,6 +178,11 @@ static xmlrpc_value *db_close (xmlrpc_env *env,
 	}
 
 	printf("CLOSE %s\n", input);
+
+	if (DATABASE == NULL) {
+		fprintf(stderr, "error: No database to close.\n");
+		return xmlrpc_build_value(env, "i", -1);
+	}
 
 	gdbm_close(DATABASE);
 	DATABASE = NULL;
@@ -289,7 +295,7 @@ static xmlrpc_value *db_get (xmlrpc_env *env,
 				return xmlrpc_build_value(env, "i", -1);
 			}
 
-			printf("GET: %s\n", data.dptr);
+			printf("GET: %s | %s\n", key.dptr, data.dptr);
 
 			nextKey = gdbm_nextkey(DATABASE, key);
 			key = nextKey;
@@ -305,7 +311,7 @@ static xmlrpc_value *db_get (xmlrpc_env *env,
 			return xmlrpc_build_value(env, "i", -1);
 		}
 
-		printf("GET: %s\n");
+		printf("GET: %s | %s\n", key.dptr, data.dptr);
 	}
 
 	return xmlrpc_build_value(env, "i", 0);

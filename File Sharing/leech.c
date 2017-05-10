@@ -21,12 +21,13 @@ int main (int argc, char **argv)
 	int i;
 	int server_ret;
 	int sock;
+	int port = PORT + atoi(argv[1]);
 	fd_set active_fd_set, read_fd_set;
 	struct sockaddr_in sock_info;
-	char *hostname = argv[1];
+	char *hostname = "localhost";
 	char buf[1024];
 
-	sock = create_socket(hostname, PORT);
+	sock = create_socket(hostname, port);
 	
 	FD_ZERO(&active_fd_set);
 	FD_SET(0, &active_fd_set);
@@ -42,6 +43,7 @@ int main (int argc, char **argv)
 		for (i = 0; i < FD_SETSIZE; i++) {
 			if (FD_ISSET(i, &read_fd_set)) {
 				memset(buf, 0, 1024);
+				printf("");
 
 				// Keyboard input
 				if (i == 0) {
