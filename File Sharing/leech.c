@@ -6,10 +6,9 @@
 #include <sys/select.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include "network.h"
 
 #define PORT 46713
-
-int create_socket(char *hostname, int port);
 
 int main (int argc, char **argv)
 {
@@ -18,16 +17,14 @@ int main (int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	int i;
-	int server_ret;
-	int sock;
-	int port = PORT + atoi(argv[1]);
+	int i, sock, server_ret;
+	//int port = PORT + atoi(argv[1]);
 	fd_set active_fd_set, read_fd_set;
 	struct sockaddr_in sock_info;
 	char *hostname = "localhost";
 	char buf[1024];
 
-	sock = create_socket(hostname, port);
+	sock = create_leech_socket(hostname, PORT);
 	
 	FD_ZERO(&active_fd_set);
 	FD_SET(0, &active_fd_set);
@@ -73,50 +70,4 @@ int main (int argc, char **argv)
 	close(sock);
 
 	return 0;
-}
-
-int create_socket (char *hostname, int port)
-{
-	int sock;
-	int flag = 1;
-	struct sockaddr_in sock_info;
-	struct hostent *host_table_ptr;
-	struct protoent *protocol_table_ptr;
-
-	memset((char *)&sock_info, 0, sizeof(sock_info));
-	sock_info.sin_family = AF_INET;
-	sock_info.sin_port = htons((u_short)port);
-
-	host_table_ptr = gethostbyname(hostname);
-	if ((char*) host_table_ptr == NULL) {
-		fprintf(stderr, "error: Unable to find host in table.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	memcpy(&sock_info.sin_addr, host_table_ptr->h_addr, host_table_ptr->h_length);
-	
-	if (((long int)(protocol_table_ptr = getprotobyname("tcp"))) == 0) {
-		fprintf(stderr, "error: Unable to map tcp protocol number.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	sock = socket(PF_INET, SOCK_STREAM, protocol_table_ptr->p_proto);
-	if (sock < 0) {
-		fprintf(stderr, "error: Unable to create socket.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, 
-		&flag, sizeof(int)) < 0) {
-		fprintf(stderr, "error: Unable to set socket option.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if (connect(sock, (struct sockaddr *)&sock_info, sizeof(sock_info)) < 0) {
-		fprintf(stderr, "error: Unable to connect onto socket.\n");
-		exit(EXIT_FAILURE);
-	}
-
-
-	return sock;
 }

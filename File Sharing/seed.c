@@ -7,18 +7,17 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include "network.h"
 
 #define PORT 46713
 
 FILE *open_split_file(int split_count);
 void split_file(int argc, char **argv);
 void merge_files(int user_count);
-int create_socket(int port);
 
 int main (int argc, char **argv)
 {
-	int i, size;
-	int sock, sock2;
+	int i, size, sock, sock2;
 	char buffer[1024];
 	fd_set read_fd_set, active_fd_set;
 	struct sockaddr_in sock_info;
@@ -29,12 +28,11 @@ int main (int argc, char **argv)
 	}
 
 	system("exec rm -r ./tmp/*");	
-	sock = create_socket(PORT);
-	sock2 = create_socket((PORT+1));
+	sock = create_seed_socket(PORT);
 
 	FD_ZERO(&active_fd_set);
 	FD_SET(sock, &active_fd_set);
-	FD_SET(sock2, &active_fd_set);
+	//FD_SET(sock2, &active_fd_set);
 
 	while (1) {
 		read_fd_set = active_fd_set;
@@ -47,7 +45,7 @@ int main (int argc, char **argv)
 		for (i = 0; i < FD_SETSIZE; i++) {
 			if (FD_ISSET(i, &read_fd_set)) {
 				// Accepting a new connection
-				if (i == sock || i == sock2) {
+				if (i == sock) {
 					printf("ACCPETING SOCKET %d\n", i);
 					int new_sock;
 
@@ -78,51 +76,6 @@ int main (int argc, char **argv)
 	//merge_files(3);
 
 	return 0;
-}
-
-int create_socket (int port)
-{
-	int flag = 1;
-	int sock;
-	struct sockaddr_in sock_info;
-	struct hostent *host_table_ptr;
-	struct protoent *protocol_table_ptr;
-
-	memset((char *)&sock_info, 0, sizeof(sock_info));
-	sock_info.sin_family = AF_INET;
-	sock_info.sin_addr.s_addr = INADDR_ANY;
-	sock_info.sin_port = htons((u_short)port);
-
-	if (((long int)(protocol_table_ptr = getprotobyname("tcp"))) == 0) {
-		fprintf(stderr, "");
-		exit(EXIT_FAILURE);
-	}
-
-	// Create a new socket.
-	sock = socket(PF_INET, SOCK_STREAM, protocol_table_ptr->p_proto);
-	if (sock < 0) {
-		fprintf(stderr, "error: Unable to create socket.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	// Set socket options
-	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, 
-		&flag, sizeof(int)) < 0) {
-		fprintf(stderr, "error: Unable to set socket options.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if (bind(sock, (struct sockaddr *)&sock_info, sizeof(sock_info)) < 0) {
-		fprintf(stderr, "error: Server bind failed.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if (listen(sock, 12) < 0) {
-		fprintf(stderr, "error: Unable to listen onto socket.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	return sock;
 }
 
 FILE *open_split_file (int split_count)
