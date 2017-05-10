@@ -43,7 +43,8 @@ int main (int argc, char **argv) {
 				// Keyboard input
 				if (i == 0) {
 					if (fgets(buffer, 1024, stdin) != NULL) {
-						status = write(leech, buffer, strlen(buffer) + 1);
+						status = write(leech, buffer, strlen(buffer)+1);
+						status = write(seed, buffer, strlen(buffer)+1);
 
 						if (status < 0) {
 							fprintf(stderr, "error: Failed server write.\n");
@@ -69,7 +70,7 @@ int main (int argc, char **argv) {
 				// Data from established connection
 				else {
 					if (read(i, buffer, sizeof(buffer)) > 0) {
-						printf("LOG: %s\n", buffer);
+						printf("STREAM %d: %s", i, buffer);
 					} else {
 						close(i);
 						FD_CLR(i, &active_fd_set);

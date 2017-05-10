@@ -17,18 +17,19 @@ int main (int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	int i, sock, server_ret;
-	//int port = PORT + atoi(argv[1]);
+	int i, sock, sock2, server_ret;
 	fd_set active_fd_set, read_fd_set;
 	struct sockaddr_in sock_info;
 	char *hostname = "localhost";
 	char buf[1024];
 
-	sock = create_leech_socket(hostname, PORT);
+	sock = create_leech_socket(hostname, atoi(argv[1]));
+	sock2 = create_leech_socket(hostname, atoi(argv[2]));
 	
 	FD_ZERO(&active_fd_set);
 	FD_SET(0, &active_fd_set);
 	FD_SET(sock, &active_fd_set);
+	FD_SET(sock2, &active_fd_set);
 
 	while (1) {
 		read_fd_set = active_fd_set;
@@ -45,22 +46,21 @@ int main (int argc, char **argv)
 				// Keyboard input
 				if (i == 0) {
 					if (fgets(buf, 1024, stdin) != NULL) {
-						server_ret = write(sock, buf, strlen(buf) + 1);
-
+						server_ret = write(sock, buf, strlen(buf)+1);
+						server_ret = write(sock2, buf, strlen(buf)+1);
 						if (server_ret < 0) {
 							fprintf(stderr, "error: Failed write to server.\n");
-							exit(EXIT_FAILURE);
 						}
 					}
 				}
 				// Socket input
 				else {
-					if (read(sock, buf, 1024) > 0) {
-						printf("CLIENT: %s\n", buf);
+					if (read(i, buf, 1024) > 0) {
+						printf("CLIENT %d: %s\n", i, buf);
 					}
 					else {
-						close(sock);
-						FD_CLR(sock, &active_fd_set);
+						close(i);
+						FD_CLR(i, &active_fd_set);
 					}
 				}
 			}

@@ -28,11 +28,12 @@ int main (int argc, char **argv)
 	}
 
 	system("exec rm -r ./tmp/*");	
-	sock = create_seed_socket(PORT);
+	sock = create_seed_socket(atoi(argv[1]));
+	sock2 = create_seed_socket(atoi(argv[2]));
 
 	FD_ZERO(&active_fd_set);
 	FD_SET(sock, &active_fd_set);
-	//FD_SET(sock2, &active_fd_set);
+	FD_SET(sock2, &active_fd_set);
 
 	while (1) {
 		read_fd_set = active_fd_set;
@@ -45,8 +46,8 @@ int main (int argc, char **argv)
 		for (i = 0; i < FD_SETSIZE; i++) {
 			if (FD_ISSET(i, &read_fd_set)) {
 				// Accepting a new connection
-				if (i == sock) {
-					printf("ACCPETING SOCKET %d\n", i);
+				if (i == sock || i == sock2) {
+					printf("ACCPET SOCKET %d\n", i);
 					int new_sock;
 
 					size = sizeof(sock_info);
@@ -62,7 +63,7 @@ int main (int argc, char **argv)
 				// Data from an established connection
 				else {
 					if (read(i, buffer, sizeof(buffer)) > 0) {
-						printf("SERVER: %s\n", buffer);
+						printf("SEED %d: %s", i, buffer);
 					} else {
 						close(i);
 					}
