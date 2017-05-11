@@ -17,7 +17,7 @@ void merge_files(int user_count);
 
 int main (int argc, char **argv)
 {
-	int i, size, sock, sock2;
+	int i, size, new_sock, new_sock2, sock, sock2, status;
 	char buffer[1024];
 	fd_set read_fd_set, active_fd_set;
 	struct sockaddr_in sock_info;
@@ -32,40 +32,52 @@ int main (int argc, char **argv)
 	sock2 = create_seed_socket(atoi(argv[2]));
 
 	FD_ZERO(&active_fd_set);
+	FD_SET(0, &active_fd_set);
 	FD_SET(sock, &active_fd_set);
 	FD_SET(sock2, &active_fd_set);
 
 	while (1) {
-		read_fd_set = active_fd_set;
+		size = sizeof(sock_info);
+		new_sock = accept(sock, (struct sockaddr *)&sock_info, &size);
+		new_sock2 = accept(sock2, (struct sockaddr *)&sock_info, &size);
 
-		if (select(FD_SETSIZE, &read_fd_set, NULL, NULL, NULL) < 0) {
-			fprintf(stderr, "error: Client disconnected.\n");
-			//exit(EXIT_FAILURE);
+		if (new_sock < 0 || new_sock2 < 0) {
+			fprintf(stderr, "error: Failed to accept socket.\n");
+			exit(EXIT_FAILURE);
 		}
 
-		for (i = 0; i < FD_SETSIZE; i++) {
-			if (FD_ISSET(i, &read_fd_set)) {
-				// Accepting a new connection
-				if (i == sock || i == sock2) {
-					printf("ACCPET SOCKET %d\n", i);
-					int new_sock;
+		FD_SET(new_sock, &active_fd_set);
+		FD_SET(new_sock2, &active_fd_set);
+		printf("ACCPET Socket %d\n", new_sock);
+		printf("ACCPET Socket %d\n", new_sock2);
 
-					size = sizeof(sock_info);
-					new_sock = accept(i, (struct sockaddr *) &sock_info, &size);
+		while (1) {
+			read_fd_set = active_fd_set;
+			memset(buffer, 0, 1024);
 
-					if (new_sock < 0) {
-						fprintf(stderr, "error: Unable to accept new socket.\n");
-						exit(EXIT_FAILURE);
+			if (select(FD_SETSIZE, &read_fd_set, NULL, NULL, NULL) < 0) {
+				fprintf(stderr, "error: Client disconnected.\n");
+				//exit(EXIT_FAILURE);
+			}
+
+			for (i = 0; i < FD_SETSIZE; i++) {
+				if (FD_ISSET(i, &read_fd_set)) {
+					// Keyboard input
+					if (i == 0) {
+						if (read(0, buffer, 1024) > 0) {
+							status = send(new_sock, buffer, strlen(buffer), 0);
+							status = send(new_sock2, buffer, strlen(buffer), 0);
+
+							if (status < 0) {
+								fprintf(stderr, "error: Failed write to server.\n");
+							}
+						}
 					}
-
-					FD_SET(new_sock, &active_fd_set);
-				}
-				// Data from an established connection
-				else {
-					if (read(i, buffer, sizeof(buffer)) > 0) {
-						printf("SEED %d: %s", i, buffer);
-					} else {
-						close(i);
+					// Data from an established connection
+					else {
+						if (read(i, buffer, 1024) > 0) {
+							printf("SEED %d: %s", i, buffer);
+						}
 					}
 				}
 			}
@@ -75,6 +87,9 @@ int main (int argc, char **argv)
 	// NOTE: Methods for splitting and merging a txt file.
 	//split_file(argc, argv);
 	//merge_files(3);
+
+	close(sock);
+	close(sock2);
 
 	return 0;
 }

@@ -15,7 +15,7 @@
  */
 
 int main (int argc, char **argv) {
-	int i, size, seed, leech, status;
+	int i, size, seed, leech, status, new_sock;
 	char buffer[1024];
 	struct sockaddr_in sock_info;
 	fd_set read_fd_set, active_fd_set;
@@ -31,49 +31,41 @@ int main (int argc, char **argv) {
 	FD_SET(leech, &active_fd_set);
 
 	while (1) {
-		read_fd_set = active_fd_set;
-		if (select(FD_SETSIZE, &read_fd_set, NULL, NULL, NULL) < 0) {
-			fprintf(stderr, "error: select() failed.\n");
+		size = sizeof(sock_info);
+		new_sock = accept(seed, (struct sockaddr *)&sock_info, &size);
+		if (new_sock < 0) {
+			fprintf(stderr, "error: Failed to accept socket.\n");
+			exit(EXIT_FAILURE);
 		}
+		printf("ACCEPT Socket %d\n", new_sock);
+		FD_SET(new_sock, &active_fd_set);
 
-		for (i = 0; i < FD_SETSIZE; i++) {
-			if (FD_ISSET(i, &read_fd_set)) {
-				memset(buffer, 0, 1024);
+		while (1) {
+			read_fd_set = active_fd_set;
+			memset(buffer, 0, 1024);
 
-				// Keyboard input
-				if (i == 0) {
-					if (fgets(buffer, 1024, stdin) != NULL) {
-						status = write(leech, buffer, strlen(buffer)+1);
-						status = write(seed, buffer, strlen(buffer)+1);
+			if (select(FD_SETSIZE, &read_fd_set, NULL, NULL, NULL) < 0) {
+				fprintf(stderr, "error: select() failed.\n");
+			}
 
-						if (status < 0) {
-							fprintf(stderr, "error: Failed server write.\n");
+			for (i = 0; i < FD_SETSIZE; i++) {
+				if (FD_ISSET(i, &read_fd_set)) {
+					// Keyboard input
+					if (i == 0) {
+						if (read(0, buffer, 1024) > 0) {
+							status = send(leech, buffer, strlen(buffer), 0);
+							status = send(new_sock, buffer, strlen(buffer), 0);
+
+							if (status < 0) {
+								fprintf(stderr, "error: Failed server write.\n");
+							}
 						}
 					}
-				}
-				// Accept connection to the seed
-				else if (i == seed) {
-					printf("ACCEPT SOCKET %d\n", i);
-
-					int new_sock;
-
-					size = sizeof(sock_info);
-					new_sock = accept(i, (struct sockaddr *)&sock_info, &size);
-
-					if (new_sock < 0) {
-						fprintf(stderr, "error: Failed new socket accept.\n");
-						exit(EXIT_FAILURE);
-					}
-
-					FD_SET(new_sock, &active_fd_set);
-				}
-				// Data from established connection
-				else {
-					if (read(i, buffer, sizeof(buffer)) > 0) {
-						printf("STREAM %d: %s", i, buffer);
-					} else {
-						close(i);
-						FD_CLR(i, &active_fd_set);
+					// Data from established connection
+					else {
+						if (read(i, buffer, 1024) > 0) {
+							printf("STREAM %d: %s", i, buffer);
+						}
 					}
 				}
 			}

@@ -89,7 +89,7 @@ int create_seed_socket (int port)
 		exit(EXIT_FAILURE);
 	}
 
-	if (listen(sock, 12) < 0) {
+	if (listen(sock, 6) < 0) {
 		fprintf(stderr, "error: Unable to listen onto socket.\n");
 		exit(EXIT_FAILURE);
 	}

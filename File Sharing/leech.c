@@ -33,6 +33,8 @@ int main (int argc, char **argv)
 
 	while (1) {
 		read_fd_set = active_fd_set;
+		memset(buf, 0, 1024);
+
 		if (select(FD_SETSIZE, &read_fd_set, NULL, NULL, NULL) < 0) {
 			fprintf(stderr, "error: Unable to select from file descriptors.\n");
 			exit(EXIT_FAILURE);
@@ -40,14 +42,12 @@ int main (int argc, char **argv)
 
 		for (i = 0; i < FD_SETSIZE; i++) {
 			if (FD_ISSET(i, &read_fd_set)) {
-				memset(buf, 0, 1024);
-				printf("");
-
 				// Keyboard input
 				if (i == 0) {
-					if (fgets(buf, 1024, stdin) != NULL) {
-						server_ret = write(sock, buf, strlen(buf)+1);
-						server_ret = write(sock2, buf, strlen(buf)+1);
+					if (read(0, buf, 1024) > 0) {
+						server_ret = send(sock, buf, strlen(buf), 0);
+						server_ret = send(sock2, buf, strlen(buf), 0);
+
 						if (server_ret < 0) {
 							fprintf(stderr, "error: Failed write to server.\n");
 						}
@@ -58,16 +58,13 @@ int main (int argc, char **argv)
 					if (read(i, buf, 1024) > 0) {
 						printf("CLIENT %d: %s\n", i, buf);
 					}
-					else {
-						close(i);
-						FD_CLR(i, &active_fd_set);
-					}
 				}
 			}
 		}
 	}
 
 	close(sock);
+	close(sock2);
 
 	return 0;
 }
