@@ -59,8 +59,15 @@ int main (int argc, char **argv)
 					// Keyboard input
 					if (i == 0) {
 						if (read(0, buffer, 1024) > 0) {
-							send(new_sock, buffer, strlen(buffer), 0);
-							send(new_sock2, buffer, strlen(buffer), 0);
+							if (!strncmp(buffer, "split", 5)) {
+								split_file(argc, argv);
+								printf("Splitting done.\n");
+								merge_files(3);
+								printf("Merging done.\n");
+							} else {
+								send(new_sock, buffer, strlen(buffer), 0);
+								send(new_sock2, buffer, strlen(buffer), 0);
+							}
 						}
 					}
 					// Data from an established connection

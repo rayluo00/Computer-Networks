@@ -122,7 +122,7 @@ void split_file (int argc, char **argv)
 	int split_size;
 	int split_count = 0;
 	char ch;
-	FILE *txt_file = fopen(argv[1], "r");
+	FILE *txt_file = fopen(argv[3], "r");
 	FILE *segment;
 	struct stat txt_stats;
 
@@ -131,15 +131,16 @@ void split_file (int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	if (stat(argv[1], &txt_stats) < 0) {
+	if (stat(argv[3], &txt_stats) < 0) {
 		fprintf(stderr, "error: Unable to get file stats.\n");
 		exit(EXIT_FAILURE);
 	}
 
-	printf("FILE SIZE: %d\n", txt_stats.st_size);
 	//TODO change (leechers+1) to accomodate for real leechers
 	split_size = ceil(txt_stats.st_size / leechers);
 	segment = open_split_file(split_count++);
+
+	printf("FILE: %d | SEGMENT: %d\n", txt_stats.st_size, split_size);
 
 	while ((ch = fgetc(txt_file)) != EOF) {
 		fputc(ch, segment);
@@ -151,4 +152,41 @@ void split_file (int argc, char **argv)
 			segment = open_split_file(split_count++);
 		}
 	}
+
+	fclose(segment);
+	fclose(txt_file);
+}
+
+void merge_files (int user_count)
+{
+	int split_count = 0;
+	char ch;
+	char filename[256];
+	FILE *txt_file;
+	FILE *merge_file = fopen("./tmp/merge.txt", "w+");
+
+	if (merge_file == NULL) {
+		fprintf(stderr, "error: Unable to open merge file.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	for (; split_count < user_count; split_count++) {
+		snprintf(filename, sizeof(filename), 
+				 "./tmp/split_%d.txt", split_count);
+
+		txt_file = fopen(filename, "r");
+
+		if (txt_file == NULL) {
+			fprintf(stderr, "error: Unable to open split file.\n");
+			exit(EXIT_FAILURE);
+		}
+
+		while ((ch = fgetc(txt_file)) != EOF) {
+			fputc(ch, merge_file);
+		}
+
+		fclose(txt_file);
+	}
+
+	fclose(merge_file);
 }
