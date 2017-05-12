@@ -17,11 +17,11 @@ int main (int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	int i, sock, sock2, server_ret;
-	fd_set active_fd_set, read_fd_set;
-	struct sockaddr_in sock_info;
+	int i, sock, sock2, status;
+	char buffer[1024];
 	char *hostname = "localhost";
-	char buf[1024];
+	struct sockaddr_in sock_info;
+	fd_set active_fd_set, read_fd_set;
 
 	sock = create_leech_socket(hostname, atoi(argv[1]));
 	sock2 = create_leech_socket(hostname, atoi(argv[2]));
@@ -33,7 +33,7 @@ int main (int argc, char **argv)
 
 	while (1) {
 		read_fd_set = active_fd_set;
-		memset(buf, 0, 1024);
+		memset(buffer, 0, 1024);
 
 		if (select(FD_SETSIZE, &read_fd_set, NULL, NULL, NULL) < 0) {
 			fprintf(stderr, "error: Unable to select from file descriptors.\n");
@@ -44,19 +44,15 @@ int main (int argc, char **argv)
 			if (FD_ISSET(i, &read_fd_set)) {
 				// Keyboard input
 				if (i == 0) {
-					if (read(0, buf, 1024) > 0) {
-						server_ret = send(sock, buf, strlen(buf), 0);
-						server_ret = send(sock2, buf, strlen(buf), 0);
-
-						if (server_ret < 0) {
-							fprintf(stderr, "error: Failed write to server.\n");
-						}
+					if (read(0, buffer, 1024) > 0) {
+						send(sock, buffer, strlen(buffer), 0);
+						send(sock2, buffer, strlen(buffer), 0);
 					}
 				}
 				// Socket input
 				else {
-					if (read(i, buf, 1024) > 0) {
-						printf("CLIENT %d: %s\n", i, buf);
+					if (read(i, buffer, 1024) > 0) {
+						printf("CLIENT %d: %s\n", i, buffer);
 					}
 				}
 			}

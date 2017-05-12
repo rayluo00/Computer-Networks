@@ -53,12 +53,8 @@ int main (int argc, char **argv) {
 					// Keyboard input
 					if (i == 0) {
 						if (read(0, buffer, 1024) > 0) {
-							status = send(leech, buffer, strlen(buffer), 0);
-							status = send(new_sock, buffer, strlen(buffer), 0);
-
-							if (status < 0) {
-								fprintf(stderr, "error: Failed server write.\n");
-							}
+							send(leech, buffer, strlen(buffer), 0);
+							send(new_sock, buffer, strlen(buffer), 0);
 						}
 					}
 					// Data from established connection
