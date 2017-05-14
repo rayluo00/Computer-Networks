@@ -8,6 +8,7 @@
 #include <netdb.h>
 #include "network.h"
 
+#define LEECH_FILE = "./file1/f1.txt";
 #define PORT 46713
 
 int main (int argc, char **argv)
@@ -49,9 +50,19 @@ int main (int argc, char **argv)
 						send(sock2, buffer, strlen(buffer), 0);
 					}
 				}
+				else if (i == sock) {
+					if ((status = read(i, buffer, 1024)) > 0) {
+						printf("STREAM\n");
+					}
+				}
+				else if (i == sock2) {
+					if ((status = read(i, buffer, 1024)) > 0) {
+						printf("SEED\n");
+					}
+				}
 				// Socket input
 				else {
-					if (read(i, buffer, 1024) > 0) {
+					if ((status = read(i, buffer, 1024)) > 0) {
 						printf("CLIENT %d: %s\n", i, buffer);
 					}
 				}

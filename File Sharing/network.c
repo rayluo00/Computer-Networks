@@ -122,7 +122,7 @@ void split_file (int argc, char **argv)
 	int split_size;
 	int split_count = 0;
 	char ch;
-	FILE *txt_file = fopen(argv[3], "r");
+	FILE *txt_file = fopen(argv[1], "r");
 	FILE *segment;
 	struct stat txt_stats;
 
@@ -131,7 +131,7 @@ void split_file (int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	if (stat(argv[3], &txt_stats) < 0) {
+	if (stat(argv[1], &txt_stats) < 0) {
 		fprintf(stderr, "error: Unable to get file stats.\n");
 		exit(EXIT_FAILURE);
 	}

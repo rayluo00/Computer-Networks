@@ -8,6 +8,8 @@
 #include <netdb.h> 
 #include "network.h"
 
+#define STREAM_FILE = "./file3/f3.txt";
+
 /*
 	A -> B : 11111 -> 22222
 	B -> C : 22222 -> 33333
@@ -57,9 +59,19 @@ int main (int argc, char **argv) {
 							send(new_sock, buffer, strlen(buffer), 0);
 						}
 					}
+					else if (i == leech) {
+						if ((status = read(i, buffer, 1024)) > 0) {
+							printf("SEED\n");
+						}
+					}
+					else if (i == new_sock) {
+						if ((status = read(i, buffer, 1024)) > 0) {
+							printf("LEECH\n");
+						}
+					}
 					// Data from established connection
 					else {
-						if (read(i, buffer, 1024) > 0) {
+						if ((status = read(i, buffer, 1024)) > 0) {
 							printf("STREAM %d: %s", i, buffer);
 						}
 					}

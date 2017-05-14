@@ -7,6 +7,7 @@
 #include <netdb.h>
 #include "network.h"
 
+#define SEED_FILE = "./file2/f2.txt";
 #define PORT 46713
 
 int main (int argc, char **argv)
@@ -22,8 +23,8 @@ int main (int argc, char **argv)
 	}
 
 	system("exec rm -r ./tmp/*");	
-	sock = create_seed_socket(atoi(argv[1]));
-	sock2 = create_seed_socket(atoi(argv[2]));
+	sock = create_seed_socket(atoi(argv[2]));
+	sock2 = create_seed_socket(atoi(argv[3]));
 
 	FD_ZERO(&active_fd_set);
 	FD_SET(0, &active_fd_set);
@@ -60,19 +61,59 @@ int main (int argc, char **argv)
 					if (i == 0) {
 						if (read(0, buffer, 1024) > 0) {
 							if (!strncmp(buffer, "split", 5)) {
+								/*
 								split_file(argc, argv);
 								printf("Splitting done.\n");
 								merge_files(3);
 								printf("Merging done.\n");
+								*/
+								split_file(argc, argv);
+								printf("Splitting done.\n");
+
+								FILE *file0 = fopen("./tmp/split_0.txt", "r");
+								FILE *file1 = fopen("./tmp/split_1.txt", "r");
+								FILE *file2 = fopen("./tmp/split_2.txt", "r");
+
+								printf("Sending file 0.\n");
+								while (fgets(buffer, 1024, file0) != NULL) {
+									send(new_sock, buffer, strlen(buffer), 0);
+								}
+
+								printf("Sending file 1.\n");
+								memset(buffer, 0, 1024);
+								while (fgets(buffer, 1024, file1) != NULL) {
+									send(new_sock2, buffer, strlen(buffer), 0);
+								}
+
+								printf("Sending file 2.\n");
+								memset(buffer, 0, 1024);
+								while (fgets(buffer, 1024, file2) != NULL) {
+									send(new_sock, buffer, strlen(buffer), 0);
+									send(new_sock2, buffer, strlen(buffer), 0);
+								}
+
+								fclose(file0);
+								fclose(file1);
+								fclose(file2);
 							} else {
 								send(new_sock, buffer, strlen(buffer), 0);
 								send(new_sock2, buffer, strlen(buffer), 0);
 							}
 						}
 					}
+					else if (i == new_sock) {
+						if ((status = read(i, buffer, 1024)) > 0) {
+							printf("STREAM\n");
+						}
+					}
+					else if (i == new_sock2) {
+						if ((status = read(i, buffer, 1024)) > 0) {
+							printf("LEECH\n");
+						}
+					}
 					// Data from an established connection
 					else {
-						if (read(i, buffer, 1024) > 0) {
+						if ((status = read(i, buffer, 1024)) > 0) {
 							printf("SEED %d: %s", i, buffer);
 						}
 					}
@@ -80,10 +121,6 @@ int main (int argc, char **argv)
 			}
 		}
 	}
-
-	// NOTE: Methods for splitting and merging a txt file.
-	//split_file(argc, argv);
-	//merge_files(3);
 
 	close(sock);
 	close(sock2);
