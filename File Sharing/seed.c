@@ -76,13 +76,13 @@ int main (int argc, char **argv)
 
 								printf("Sending file 0.\n");
 								while (fgets(buffer, 1024, file0) != NULL) {
-									send(new_sock, buffer, strlen(buffer), 0);
+									send(new_sock2, buffer, strlen(buffer), 0);
 								}
 
 								printf("Sending file 1.\n");
 								memset(buffer, 0, 1024);
 								while (fgets(buffer, 1024, file1) != NULL) {
-									send(new_sock2, buffer, strlen(buffer), 0);
+									send(new_sock, buffer, strlen(buffer), 0);
 								}
 
 								printf("Sending file 2.\n");
@@ -103,12 +103,12 @@ int main (int argc, char **argv)
 					}
 					else if (i == new_sock) {
 						if ((status = read(i, buffer, 1024)) > 0) {
-							printf("STREAM\n");
+							printf("STREAM: %s", buffer);
 						}
 					}
 					else if (i == new_sock2) {
 						if ((status = read(i, buffer, 1024)) > 0) {
-							printf("LEECH\n");
+							printf("LEECH: %s", buffer);
 						}
 					}
 					// Data from an established connection

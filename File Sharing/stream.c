@@ -61,12 +61,19 @@ int main (int argc, char **argv) {
 					}
 					else if (i == leech) {
 						if ((status = read(i, buffer, 1024)) > 0) {
-							printf("SEED\n");
+							//printf("SEED\n");
+							FILE *out_file = fopen("./file2/stream.txt", "a");
+							fputs(buffer, out_file);
+							send(new_sock, buffer, strlen(buffer), 0);
+							fclose(out_file);
 						}
 					}
 					else if (i == new_sock) {
 						if ((status = read(i, buffer, 1024)) > 0) {
-							printf("LEECH\n");
+							//printf("LEECH\n");
+							FILE *out_file = fopen("./file2/stream.txt", "a");
+							fputs(buffer, out_file);
+							fclose(out_file);
 						}
 					}
 					// Data from established connection

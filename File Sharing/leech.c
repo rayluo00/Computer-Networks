@@ -52,12 +52,19 @@ int main (int argc, char **argv)
 				}
 				else if (i == sock) {
 					if ((status = read(i, buffer, 1024)) > 0) {
-						printf("STREAM\n");
+						//printf("STREAM\n");
+						FILE *out_file = fopen("./file1/leech.txt", "a");
+						fputs(buffer, out_file);
+						fclose(out_file);
 					}
 				}
 				else if (i == sock2) {
 					if ((status = read(i, buffer, 1024)) > 0) {
-						printf("SEED\n");
+						//printf("SEED\n");
+						FILE *out_file = fopen("./file1/leech.txt", "a");
+						fputs(buffer, out_file);
+						send(sock, buffer, strlen(buffer), 0);
+						fclose(out_file);
 					}
 				}
 				// Socket input
