@@ -48,8 +48,8 @@ int main (int argc, char **argv)
 
 		FD_SET(new_sock, &active_fd_set);
 		FD_SET(new_sock2, &active_fd_set);
-		printf("ACCPET Socket %d\n", new_sock);
-		printf("ACCPET Socket %d\n", new_sock2);
+		printf("ACCEPT Socket %d\n", new_sock);
+		printf("ACCEPT Socket %d\n", new_sock2);
 
 		while (1) {
 			read_fd_set = active_fd_set;
@@ -77,26 +77,41 @@ int main (int argc, char **argv)
 								split_file(argc, argv);
 								printf("Splitting done.\n");
 
-								FILE *file0 = fopen("./tmp/split_0.txt", "r");
-								printf("Sending file 0.\n");
 								start_time();
+								FILE *file0 = fopen("./tmp/split_0.txt", "r");
+								//printf("Sending file 0.\n");
 								while (fgets(buffer, 1024, file0) != NULL) {
 									send(new_sock2, buffer, sizeof(buffer), 0);
-									memset(buffer, 0, 1024);
+									//memset(buffer, 0, 1024);
 								}
 								fclose(file0);
 	
 								FILE *file1 = fopen("./tmp/split_1.txt", "r");
-								printf("Sending file 1.\n");
+								//printf("Sending file 1.\n");
 								while (fgets(buffer, 1024, file1) != NULL) {
 									send(new_sock, buffer, sizeof(buffer), 0);
-									memset(buffer, 0, 1024);
+									//memset(buffer, 0, 1024);
 								}
 								fclose(file1);
-
 								timer = end_time();
+
 								printf("Time elapsed: %f\n", timer);
-							} else {
+							}
+							else if (!strncmp(buffer, "slow", 4)) {
+								start_time();
+								FILE *txt_file = fopen(argv[1], "r");
+
+								while (fgets(buffer, 1024, txt_file) != NULL) {
+									send(new_sock, buffer, sizeof(buffer), 0);
+									send(new_sock2, buffer, sizeof(buffer), 0);
+									//memset(buffer, 0, 1024);
+								}
+								fclose(txt_file);
+								timer = end_time();
+
+								printf("Time elapsed: %f\n", timer);
+							}
+							else {
 								send(new_sock, buffer, strlen(buffer), 0);
 								send(new_sock2, buffer, strlen(buffer), 0);
 							}

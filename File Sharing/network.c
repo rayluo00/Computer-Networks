@@ -10,7 +10,8 @@
 #include <netdb.h>
 #include "network.h"
 
-clock_t CPU_TIMER;
+clock_t START_TIME;
+clock_t END_TIME;
 
 int create_leech_socket (char *hostname, int port)
 {
@@ -201,9 +202,10 @@ void merge_files (int user_count, char *file_path)
 }
 
 void start_time () {
-	CPU_TIMER = clock();	
+	START_TIME = clock();	
 }
 
 double end_time () {
-	return ((double) clock() - CPU_TIMER) / CLOCKS_PER_SEC;
+	END_TIME = clock();
+	return (((double) END_TIME - START_TIME) / CLOCKS_PER_SEC);
 }
