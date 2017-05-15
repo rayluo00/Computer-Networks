@@ -23,7 +23,10 @@ int main (int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	system("exec rm -r ./tmp/*");	
+	system("exec rm -r ./tmp/*");
+	system("exec rm -f ./file1/*");
+	system("exec rm -f ./file2/*");
+
 	sock = create_seed_socket(atoi(argv[2]));
 	sock2 = create_seed_socket(atoi(argv[3]));
 
@@ -98,7 +101,11 @@ int main (int argc, char **argv)
 								printf("Sending file 2.\n");
 								memset(buffer, 0, 1024);
 								while (fgets(buffer, 1024, file2) != NULL) {
-									send(new_sock2, buffer, strlen(buffer), 0;
+									send(new_sock, "DUMMY_MSG_ON", strlen("DUMMY_MSG_ON"), 0);
+									send(new_sock2, "DUMMY_MSG_ON", strlen("DUMMY_MSG_ON"), 0);
+
+									send(new_sock, buffer, strlen(buffer), 0);
+									send(new_sock2, buffer, strlen(buffer), 0);
 								}
 
 								timer = end_time();

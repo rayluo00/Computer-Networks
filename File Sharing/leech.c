@@ -19,6 +19,7 @@ int main (int argc, char **argv)
 	}
 
 	int i, sock, sock2, status;
+	int flag = 0;
 	char buffer[1024];
 	char *hostname = "localhost";
 	double timer = 0;
@@ -75,12 +76,20 @@ int main (int argc, char **argv)
 				else if (i == sock2) {
 					if ((status = read(i, buffer, 1024)) > 0) {
 						//printf("SEED\n");
-						out_file = fopen("./file1/leech.txt", "a");
-						start_time();
-						fputs(buffer, out_file);
-						send(sock, buffer, strlen(buffer), 0);
-						timer += end_time();
-						fclose(out_file);
+						if (!strcmp(buffer, "DUMMY_MSG_ON")) {
+							flag = 1;
+						} else {
+							out_file = fopen("./file1/leech.txt", "a");
+							start_time();
+							fputs(buffer, out_file);
+
+							if (!flag) {
+								send(sock, buffer, strlen(buffer), 0);
+							}
+
+							timer += end_time();
+							fclose(out_file);
+						}
 					}
 				}
 				// Socket input

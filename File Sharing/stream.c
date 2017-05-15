@@ -18,6 +18,7 @@
 
 int main (int argc, char **argv) {
 	int i, size, seed, leech, status, new_sock;
+	int flag = 0;
 	char buffer[1024];
 	double timer = 0;
 	FILE *out_file;
@@ -75,12 +76,20 @@ int main (int argc, char **argv) {
 					else if (i == leech) {
 						if ((status = read(i, buffer, 1024)) > 0) {
 							//printf("SEED\n");
-							out_file = fopen("./file2/stream.txt", "a");
-							start_time();
-							fputs(buffer, out_file);
-							send(new_sock, buffer, strlen(buffer), 0);
-							timer += end_time();
-							fclose(out_file);
+							if (!strcmp(buffer, "DUMMY_MSG_ON")) {
+								flag = 1;
+							} else {
+								out_file = fopen("./file2/stream.txt", "a");
+								start_time();
+								fputs(buffer, out_file);
+
+								if (!flag) {
+									send(new_sock, buffer, strlen(buffer), 0);
+								}
+
+								timer += end_time();
+								fclose(out_file);
+							}
 						}
 					}
 					else if (i == new_sock) {
