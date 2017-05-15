@@ -37,13 +37,13 @@ int main (int argc, char **argv)
 
 	while (1) {
 		read_fd_set = active_fd_set;
-		memset(buffer, 0, 1024);
 
 		if (select(FD_SETSIZE, &read_fd_set, NULL, NULL, NULL) < 0) {
 			fprintf(stderr, "error: Unable to select from file descriptors.\n");
 			exit(EXIT_FAILURE);
 		}
 
+		memset(buffer, 0, 1024);
 		for (i = 0; i < FD_SETSIZE; i++) {
 			if (FD_ISSET(i, &read_fd_set)) {
 				// Keyboard input
@@ -57,39 +57,36 @@ int main (int argc, char **argv)
 						}
 						else if (!(strncmp(buffer, "time", 4))) {
 							printf("Time elapsed: %f\n", timer);
-						} else {
+						}
+						else if (!(strncmp(buffer, "merge", 5))) {
+							merge_files(2, "./file1");
+						} 
+						else {
 							send(sock, buffer, strlen(buffer), 0);
 							send(sock2, buffer, strlen(buffer), 0);
 						}
 					}
 				}
+				// STREAM
 				else if (i == sock) {
 					if ((status = read(i, buffer, 1024)) > 0) {
-						//printf("STREAM\n");
-						out_file = fopen("./file1/leech.txt", "a");
+						out_file = fopen("./file1/f1.txt", "a");
 						start_time();
 						fputs(buffer, out_file);
 						timer += end_time();
 						fclose(out_file);
 					}
 				}
+				// SEED
 				else if (i == sock2) {
 					if ((status = read(i, buffer, 1024)) > 0) {
-						//printf("SEED\n");
-						if (!strcmp(buffer, "DUMMY_MSG_ON")) {
-							flag = 1;
-						} else {
-							out_file = fopen("./file1/leech.txt", "a");
-							start_time();
-							fputs(buffer, out_file);
-
-							if (!flag) {
-								send(sock, buffer, strlen(buffer), 0);
-							}
-
-							timer += end_time();
-							fclose(out_file);
-						}
+						out_file = fopen("./file1/f0.txt", "a");
+						start_time();
+						fputs(buffer, out_file);
+						timer += end_time();
+						fclose(out_file);
+						
+						send(sock, buffer, strlen(buffer), 0);	
 					}
 				}
 				// Socket input

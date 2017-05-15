@@ -120,7 +120,7 @@ FILE *open_split_file (int split_count)
 
 void split_file (int argc, char **argv) 
 {
-	int leechers = 3;
+	int leechers = 2;
 	int file_size = 0;
 	int split_size;
 	int split_count = 0;
@@ -160,13 +160,17 @@ void split_file (int argc, char **argv)
 	fclose(txt_file);
 }
 
-void merge_files (int user_count)
+void merge_files (int user_count, char *file_path)
 {
 	int split_count = 0;
 	char ch;
 	char filename[256];
 	FILE *txt_file;
-	FILE *merge_file = fopen("./tmp/merge.txt", "w+");
+	FILE *merge_file;
+
+	snprintf(filename, sizeof(filename), "%s/merge.txt", file_path);
+	merge_file = fopen(filename, "w+");
+	printf("Merging to %s\n", filename);
 
 	if (merge_file == NULL) {
 		fprintf(stderr, "error: Unable to open merge file.\n");
@@ -174,8 +178,10 @@ void merge_files (int user_count)
 	}
 
 	for (; split_count < user_count; split_count++) {
+		memset(filename, 0, 256);
 		snprintf(filename, sizeof(filename), 
-				 "./tmp/split_%d.txt", split_count);
+				 "%s/f%d.txt", file_path, split_count);
+		printf("Reading %s\n", filename);
 
 		txt_file = fopen(filename, "r");
 
