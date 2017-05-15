@@ -14,6 +14,7 @@ int main (int argc, char **argv)
 {
 	int i, size, new_sock, new_sock2, sock, sock2, status;
 	char buffer[1024];
+	double timer = 0;
 	fd_set read_fd_set, active_fd_set;
 	struct sockaddr_in sock_info;
 
@@ -60,7 +61,15 @@ int main (int argc, char **argv)
 					// Keyboard input
 					if (i == 0) {
 						if (read(0, buffer, 1024) > 0) {
-							if (!strncmp(buffer, "split", 5)) {
+							if (!strncmp(buffer, "q", 1)) {
+								printf("Quitting program.\n");
+								close(sock);
+								close(sock2);
+								close(new_sock);
+								close(new_sock2);
+								exit(EXIT_SUCCESS);
+							}
+							else if (!strncmp(buffer, "split", 5)) {
 								/*
 								split_file(argc, argv);
 								printf("Splitting done.\n");
@@ -75,6 +84,7 @@ int main (int argc, char **argv)
 								FILE *file2 = fopen("./tmp/split_2.txt", "r");
 
 								printf("Sending file 0.\n");
+								start_time();
 								while (fgets(buffer, 1024, file0) != NULL) {
 									send(new_sock2, buffer, strlen(buffer), 0);
 								}
@@ -88,9 +98,11 @@ int main (int argc, char **argv)
 								printf("Sending file 2.\n");
 								memset(buffer, 0, 1024);
 								while (fgets(buffer, 1024, file2) != NULL) {
-									send(new_sock, buffer, strlen(buffer), 0);
-									send(new_sock2, buffer, strlen(buffer), 0);
+									send(new_sock2, buffer, strlen(buffer), 0;
 								}
+
+								timer = end_time();
+								printf("Time elapsed: %f\n", timer);
 
 								fclose(file0);
 								fclose(file1);

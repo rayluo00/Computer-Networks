@@ -19,6 +19,8 @@
 int main (int argc, char **argv) {
 	int i, size, seed, leech, status, new_sock;
 	char buffer[1024];
+	double timer = 0;
+	FILE *out_file;
 	struct sockaddr_in sock_info;
 	fd_set read_fd_set, active_fd_set;
 
@@ -55,24 +57,39 @@ int main (int argc, char **argv) {
 					// Keyboard input
 					if (i == 0) {
 						if (read(0, buffer, 1024) > 0) {
-							send(leech, buffer, strlen(buffer), 0);
-							send(new_sock, buffer, strlen(buffer), 0);
+							if (!strncmp(buffer, "q", 1)) {
+								printf("Quitting program.\n");
+								close(seed);
+								close(leech);
+								close(new_sock);
+								exit(EXIT_SUCCESS);
+							}
+							else if (!strncmp(buffer, "time", 4)) {
+								printf("Time elapsed: %f\n", timer);
+							} else {
+								send(leech, buffer, strlen(buffer), 0);
+								send(new_sock, buffer, strlen(buffer), 0);
+							}
 						}
 					}
 					else if (i == leech) {
 						if ((status = read(i, buffer, 1024)) > 0) {
 							//printf("SEED\n");
-							FILE *out_file = fopen("./file2/stream.txt", "a");
+							out_file = fopen("./file2/stream.txt", "a");
+							start_time();
 							fputs(buffer, out_file);
 							send(new_sock, buffer, strlen(buffer), 0);
+							timer += end_time();
 							fclose(out_file);
 						}
 					}
 					else if (i == new_sock) {
 						if ((status = read(i, buffer, 1024)) > 0) {
 							//printf("LEECH\n");
-							FILE *out_file = fopen("./file2/stream.txt", "a");
+							out_file = fopen("./file2/stream.txt", "a");
+							start_time();
 							fputs(buffer, out_file);
+							timer += end_time();
 							fclose(out_file);
 						}
 					}
