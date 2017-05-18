@@ -69,16 +69,19 @@ int main (int argc, char **argv) {
 
         memset(buf, 0, buf_len);
         for (i = 0; i < FD_SETSIZE; i++) {
-            // Keyboard input
-            if (i == 0) {
-            
-            }
-            // Client input
-            else if (i == sd) {
-                if (read(sd, buf, buf_len) < 0) {
-                    fprintf(stderr, "error: Failed to read.\n");
+            if (FD_ISSET(i, &read_set)) {
+                // Keyboard input
+                if (i == 0) {
+                    if (read(i, buf, buflen) > 0) {
+                        send(sd, buf, buf_len, 0);
+                    }
                 }
-                printf("READ: %s\n", buf);
+                // Client input
+                else if (i == sd) {
+                    if (read(i, buf, buf_len) > 0) {
+                        printf("SERVER: %s\n", buf);
+                    }
+                }
             }
         }
     }
