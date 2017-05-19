@@ -10,14 +10,13 @@
 #define LOCAL_ADDR "127.0.0.1"
 #define GROUP_ADDR "239.46.7.13"
 
-int main (int argc, char **argv) {
+int main (int argc, char **argv)
+{
     char buf[1024];
     int sd, i;
-    int reuse = 1;
     int buf_len = sizeof(buf);
-    struct ip_mreq group;
-    struct sockaddr_in local_sock;
-    fd_set read_set, active_set;
+    struct in_addr local_interface;
+    struct sockaddr_in group_sock;
 
     if (argc < 2) {
         fprintf(stderr, "error: Missing parameters.\n");
@@ -26,65 +25,31 @@ int main (int argc, char **argv) {
 
     sd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sd < 0) {
-        fprintf(stderr, "error: Failed to create socket.\n");
+        fprintf(stderr, "error: socket() failed\n");
         exit(EXIT_FAILURE);
     }
 
-    if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse,
-                   sizeof(reuse)) < 0) {
-        fprintf(stderr, "error: Unable to set SO_REUSEADDR.\n");
+    memset((char *)&group_sock, 0, sizeof(group_sock));
+    group_sock.sin_family = AF_INET;
+    group_sock.sin_addr.s_addr = inet_addr(GROUP_ADDR);
+    group_sock.sin_port = htons((u_short) atoi(argv[2]));
+
+    local_interface.s_addr = inet_addr(argv[1]);
+    if (setsockopt(sd, IPPROTO_IP, IP_MULTICAST_IF, 
+                (char *)&local_interface, 
+                sizeof(local_interface)) < 0) {
+        fprintf(stderr, "error: setsockopt() failed.\n");
         close(sd);
         exit(EXIT_FAILURE);
     }
 
-    memset((char *)&local_sock, 0, sizeof(local_sock));
-    local_sock.sin_family = AF_INET;
-    local_sock.sin_port = htons((u_short) atoi(argv[2]));
-    local_sock.sin_addr.s_addr = INADDR_ANY;
-    if (bind(sd, (struct sockaddr *)&local_sock, 
-             sizeof(local_sock))) {
-        fprintf(stderr, "error: Failed to bind socket.\n");
-        close(sd);
-        exit(EXIT_FAILURE);
-    }
+    printf("Creating socket...DONE.\n");
 
-    group.imr_multiaddr.s_addr = inet_addr(GROUP_ADDR);
-    group.imr_interface.s_addr = inet_addr(argv[1]);
-    if (setsockopt(sd, IPPROTO_IP, IP_ADD_MEMBERSHIP, 
-                   (char *)&group, sizeof(group)) < 0) {
-        fprintf(stderr, "error: Unable to add multicast group.\n");
-        close(sd);
-        exit(EXIT_FAILURE);
-    }
+    sendto(sd, "hello", strlen("hello"), 0, 
+            (struct sockaddr *)&group_sock, sizeof(group_sock));
 
-    FD_ZERO(&active_set);
-    FD_SET(0, &active_set);
-    FD_SET(sd, &active_set);
-
-    while (1) {
-        read_set = active_set;
-        if (select(FD_SETSIZE, &read_set, NULL, NULL, NULL) < 0) {
-            fprintf(stderr, "error: Unable to select fd.\n");
-        }
-
-        memset(buf, 0, buf_len);
-        for (i = 0; i < FD_SETSIZE; i++) {
-            if (FD_ISSET(i, &read_set)) {
-                // Keyboard input
-                if (i == 0) {
-                    if (read(i, buf, buflen) > 0) {
-                        send(sd, buf, buf_len, 0);
-                    }
-                }
-                // Client input
-                else if (i == sd) {
-                    if (read(i, buf, buf_len) > 0) {
-                        printf("SERVER: %s\n", buf);
-                    }
-                }
-            }
-        }
-    }
+    close(sd);
 
     return 0;
 }
+
