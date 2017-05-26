@@ -2,16 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include "network.h"
-
-clock_t START_TIME;
-clock_t END_TIME;
 
 int create_leech_socket (char *hostname, int port)
 {
@@ -199,13 +195,4 @@ void merge_files (int user_count, char *file_path)
 	}
 
 	fclose(merge_file);
-}
-
-void start_time () {
-	START_TIME = clock();	
-}
-
-double end_time () {
-	END_TIME = clock();
-	return (((double) END_TIME - START_TIME) / CLOCKS_PER_SEC);
 }

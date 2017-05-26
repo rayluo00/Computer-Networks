@@ -6,6 +6,7 @@
 #include <sys/select.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <time.h>
 #include "network.h"
 
 #define LEECH_FILE = "./file1/f1.txt";
@@ -25,6 +26,7 @@ int main (int argc, char **argv)
 	double timer = 0;
 	struct sockaddr_in sock_info;
 	FILE *out_file;
+	clock_t start, end;
 	fd_set active_fd_set, read_fd_set;
 
 	sock = create_leech_socket(hostname, atoi(argv[1]));
@@ -60,6 +62,9 @@ int main (int argc, char **argv)
 						}
 						else if (!(strncmp(buffer, "merge", 5))) {
 							merge_files(2, "./file1");
+						}
+						else if (!strncmp(buffer, "reset", 5)) {
+							timer = 0;
 						} 
 						else {
 							send(sock, buffer, strlen(buffer), 0);
@@ -71,22 +76,31 @@ int main (int argc, char **argv)
 				else if (i == sock) {
 					if ((status = read(i, buffer, 1024)) > 0) {
 						out_file = fopen("./file1/f1.txt", "a");
-						start_time();
+						start = clock();
 						fputs(buffer, out_file);
-						timer += end_time();
+						end = clock();
+						timer += ((double) (end - start)) / CLOCKS_PER_SEC;
 						fclose(out_file);
 					}
 				}
 				// SEED
 				else if (i == sock2) {
 					if ((status = read(i, buffer, 1024)) > 0) {
-						out_file = fopen("./file1/f0.txt", "a");
-						start_time();
-						fputs(buffer, out_file);
-						timer += end_time();
-						fclose(out_file);
-						
-						send(sock, buffer, strlen(buffer), 0);	
+						if (!strncmp(buffer, "NOSPLIT_FLAG", 12)) {
+							flag = 1;
+							printf("No split flag = ON\n");
+						} else {
+							out_file = fopen("./file1/f0.txt", "a");
+							start = clock();
+							fputs(buffer, out_file);
+							end = clock();
+							timer += ((double) (end - start)) / CLOCKS_PER_SEC;
+							fclose(out_file);
+							
+							if (!flag) {
+								send(sock, buffer, strlen(buffer), 0);	
+							}
+						}
 					}
 				}
 				// Socket input

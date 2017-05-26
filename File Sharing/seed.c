@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <time.h>
 #include "network.h"
 
 #define SEED_FILE = "./file2/f2.txt";
@@ -15,6 +16,7 @@ int main (int argc, char **argv)
 	int i, size, new_sock, new_sock2, sock, sock2, status;
 	char buffer[1024];
 	double timer = 0;
+	clock_t start, end;
 	fd_set read_fd_set, active_fd_set;
 	struct sockaddr_in sock_info;
 
@@ -77,40 +79,63 @@ int main (int argc, char **argv)
 								split_file(argc, argv);
 								printf("Splitting done.\n");
 
-								start_time();
 								FILE *file0 = fopen("./tmp/split_0.txt", "r");
+								FILE *file1 = fopen("./tmp/split_1.txt", "r");
+
+								timer = 0;
+								start = clock();
 								//printf("Sending file 0.\n");
 								while (fgets(buffer, 1024, file0) != NULL) {
 									send(new_sock2, buffer, sizeof(buffer), 0);
-									//memset(buffer, 0, 1024);
 								}
-								fclose(file0);
 	
-								FILE *file1 = fopen("./tmp/split_1.txt", "r");
 								//printf("Sending file 1.\n");
 								while (fgets(buffer, 1024, file1) != NULL) {
 									send(new_sock, buffer, sizeof(buffer), 0);
-									//memset(buffer, 0, 1024);
 								}
+								end = clock();
+								timer = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+								fclose(file0);
 								fclose(file1);
-								timer = end_time();
 
 								printf("Time elapsed: %f\n", timer);
 							}
-							else if (!strncmp(buffer, "slow", 4)) {
-								start_time();
+							else if (!strncmp(buffer, "nosplit", 7)) {
+								snprintf(buffer, 1024, "NOSPLIT_FLAG");
+								send(new_sock, buffer, sizeof(buffer), 0);
+								send(new_sock2, buffer, sizeof(buffer), 0);
+								memset(buffer, 0, 1024);
+
 								FILE *txt_file = fopen(argv[1], "r");
 
+								timer = 0;
+								start = clock();
 								while (fgets(buffer, 1024, txt_file) != NULL) {
 									send(new_sock, buffer, sizeof(buffer), 0);
-									send(new_sock2, buffer, sizeof(buffer), 0);
-									//memset(buffer, 0, 1024);
 								}
+								end = clock();
+								timer += ((double) (end - start)) / CLOCKS_PER_SEC;
 								fclose(txt_file);
-								timer = end_time();
+
+								memset(buffer, 0, 1024);
+								txt_file = fopen(argv[1], "r");
+								start = clock();
+								while (fgets(buffer, 1024, txt_file) != NULL) {
+									send(new_sock2, buffer, sizeof(buffer), 0);
+								}
+								end = clock();
+								timer += ((double) (end - start)) / CLOCKS_PER_SEC;
+								fclose(txt_file);
 
 								printf("Time elapsed: %f\n", timer);
 							}
+							else if (!strncmp(buffer, "time", 4)) {
+								printf("Time: %f\n", timer);
+							}
+							else if (!strncmp(buffer, "reset", 5)) {
+								timer = 0;
+							} 
 							else {
 								send(new_sock, buffer, strlen(buffer), 0);
 								send(new_sock2, buffer, strlen(buffer), 0);
