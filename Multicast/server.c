@@ -186,17 +186,15 @@ void send_maze (int igmp_sd, struct sockaddr_in group_sock,
     for (int i = 0; i < 10; i++) {
         memset(line, 0, sizeof(line));
         for (int j = 0; j < 10; j++) {
-            //printf("%c ", MAZE[i][j]);
             line[j] = MAZE[i][j];
 
             if (i == p1.x && j == p1.y) {
                 line[j] = '1';
             }
             if (i == p2.x && j == p2.y) {
-                line[j] == '2';
+                line[j] = '2';
             }
         }
-        //printf("\n");
         sendto(igmp_sd, line, sizeof(line), 0, 
                 (struct sockaddr *)&group_sock, sizeof(group_sock));
     }
