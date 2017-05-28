@@ -1,3 +1,14 @@
+/********************************************************************
+ * network.c
+ *
+ * Author: Raymond Weiming Luo
+ *
+ * File holding the utility functionalities of the file sharing 
+ * program. These functions are implemented from all the peers
+ * using specific functions.
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,6 +20,11 @@
 #include <netdb.h>
 #include "network.h"
 
+/********************************************************************
+ * Create a client TCP socket connection. Return the socket descriptor
+ * to the original caller.
+ *
+ */
 int create_leech_socket (char *hostname, int port)
 {
 	int sock;
@@ -21,31 +37,35 @@ int create_leech_socket (char *hostname, int port)
 	sock_info.sin_family = AF_INET;
 	sock_info.sin_port = htons((u_short)port);
 
+	// Get hostname into the host table
 	host_table_ptr = gethostbyname(hostname);
 	if ((char*) host_table_ptr == NULL) {
 		fprintf(stderr, "error: Unable to find host in table.\n");
 		exit(EXIT_FAILURE);
 	}
 
-	memcpy(&sock_info.sin_addr, host_table_ptr->h_addr, host_table_ptr->h_length);
-	
+	// Use TCP protocol
+	memcpy(&sock_info.sin_addr, host_table_ptr->h_addr, host_table_ptr->h_length);	
 	if (((long int)(protocol_table_ptr = getprotobyname("tcp"))) == 0) {
 		fprintf(stderr, "error: Unable to map tcp protocol number.\n");
 		exit(EXIT_FAILURE);
 	}
 
+	// Create a socket
 	sock = socket(PF_INET, SOCK_STREAM, protocol_table_ptr->p_proto);
 	if (sock < 0) {
 		fprintf(stderr, "error: Unable to create socket.\n");
 		exit(EXIT_FAILURE);
 	}
 
+	// Set socket options
 	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, 
 		&flag, sizeof(int)) < 0) {
 		fprintf(stderr, "error: Unable to set socket option.\n");
 		exit(EXIT_FAILURE);
 	}
 
+	// Connect to a listening socket
 	if (connect(sock, (struct sockaddr *)&sock_info, sizeof(sock_info)) < 0) {
 		fprintf(stderr, "error: Unable to connect onto socket.\n");
 		exit(EXIT_FAILURE);
@@ -54,6 +74,12 @@ int create_leech_socket (char *hostname, int port)
 	return sock;
 }
 
+/********************************************************************
+ * Create a TCP socket connection with the peers for file sharing.
+ * Returns the socket descriptor once a connection has been 
+ * esatblished.
+ *
+ */
 int create_seed_socket (int port)
 {
 	int flag = 1;
@@ -72,7 +98,7 @@ int create_seed_socket (int port)
 		exit(EXIT_FAILURE);
 	}
 
-	// Create a new socket.
+	// Create a new socket
 	sock = socket(PF_INET, SOCK_STREAM, protocol_table_ptr->p_proto);
 	if (sock < 0) {
 		fprintf(stderr, "error: Unable to create socket.\n");
@@ -86,11 +112,13 @@ int create_seed_socket (int port)
 		exit(EXIT_FAILURE);
 	}
 
+	// Bind the the socket descriptor
 	if (bind(sock, (struct sockaddr *)&sock_info, sizeof(sock_info)) < 0) {
 		fprintf(stderr, "error: Server bind failed.\n");
 		exit(EXIT_FAILURE);
 	}
 
+	// Listen for any client socket connections
 	if (listen(sock, 6) < 0) {
 		fprintf(stderr, "error: Unable to listen onto socket.\n");
 		exit(EXIT_FAILURE);
@@ -99,6 +127,10 @@ int create_seed_socket (int port)
 	return sock;
 }
 
+/********************************************************************
+ * Open one of the file peices based on the id of the file peice.
+ *
+ */
 FILE *open_split_file (int split_count)
 {
 	char filename[256];	
@@ -115,6 +147,12 @@ FILE *open_split_file (int split_count)
 	return new_split_file;
 }
 
+/********************************************************************
+ * Given a file, split it to N number of peices. Where N is the 
+ * number of peers connecting to the seed. Currently, N is statically
+ * set to 2 for only 2 peers.
+ *
+ */
 void split_file (int argc, char **argv) 
 {
 	int leechers = 2;
@@ -136,12 +174,13 @@ void split_file (int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	//TODO change (leechers+1) to accomodate for real leechers
+	// Calculate the size of each peice
 	split_size = ceil(txt_stats.st_size / leechers);
 	segment = open_split_file(split_count++);
 
 	printf("FILE: %d | SEGMENT: %d\n", txt_stats.st_size, split_size);
 
+	// Split the files according to the calculated size of each peice
 	while ((ch = fgetc(txt_file)) != EOF) {
 		fputc(ch, segment);
 		file_size++;
@@ -157,6 +196,12 @@ void split_file (int argc, char **argv)
 	fclose(txt_file);
 }
 
+/********************************************************************
+ * Merge the files given a path name to the file peices. Merges all
+ * the text files into a new file within the given path called
+ * 'merge.txt'.
+ *
+ */
 void merge_files (int user_count, char *file_path)
 {
 	int split_count = 0;
@@ -165,6 +210,7 @@ void merge_files (int user_count, char *file_path)
 	FILE *txt_file;
 	FILE *merge_file;
 
+	// Open and truncate or create a new file called merge.txt
 	snprintf(filename, sizeof(filename), "%s/merge.txt", file_path);
 	merge_file = fopen(filename, "w+");
 	printf("Merging to %s\n", filename);
@@ -174,6 +220,7 @@ void merge_files (int user_count, char *file_path)
 		exit(EXIT_FAILURE);
 	}
 
+	// Merge all the file peices from the directory into the merge file
 	for (; split_count < user_count; split_count++) {
 		memset(filename, 0, 256);
 		snprintf(filename, sizeof(filename), 
@@ -187,6 +234,7 @@ void merge_files (int user_count, char *file_path)
 			exit(EXIT_FAILURE);
 		}
 
+		// Write the data from the peices into the merge file
 		while ((ch = fgetc(txt_file)) != EOF) {
 			fputc(ch, merge_file);
 		}

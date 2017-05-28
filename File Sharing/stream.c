@@ -1,3 +1,15 @@
+/********************************************************************
+ * stream.c
+ *
+ * Author: Raymond Weiming Luo
+ *
+ * Retrieve half of the text data from the seed and destribute it to
+ * the connected leech peer. Then get the missing half of the text data
+ * from the leech and merge the two prices to obtain a full text
+ * document. Performance is computed using clock(3).
+ *
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -11,12 +23,6 @@
 
 #define STREAM_FILE = "./file3/f3.txt";
 
-/*
-	A -> B : 11111 -> 22222
-	B -> C : 22222 -> 33333
-	C -> A : 33333 -> 11111
- */
-
 int main (int argc, char **argv) {
 	int i, size, seed, leech, status, new_sock;
 	int flag = 0;
@@ -27,11 +33,14 @@ int main (int argc, char **argv) {
 	struct sockaddr_in sock_info;
 	fd_set read_fd_set, active_fd_set;
 
+	// Remove peices from temp directory
 	system("exec rm -f ./tmp/*");
 
+	// Establish TCP connection to peers
 	seed = create_seed_socket(atoi(argv[1]));
 	leech = create_leech_socket("localhost", atoi(argv[2]));
 
+	// Set active file descriptors
 	FD_ZERO(&active_fd_set);
 	FD_SET(0, &active_fd_set);
 	FD_SET(seed, &active_fd_set);
@@ -60,6 +69,7 @@ int main (int argc, char **argv) {
 					// Keyboard input
 					if (i == 0) {
 						if (read(0, buffer, 1024) > 0) {
+							// Quit program
 							if (!strncmp(buffer, "q", 1)) {
 								printf("Quitting program.\n");
 								close(seed);
@@ -67,24 +77,29 @@ int main (int argc, char **argv) {
 								close(new_sock);
 								exit(EXIT_SUCCESS);
 							}
+							// Display processing time
 							else if (!strncmp(buffer, "time", 4)) {
 								printf("Time elapsed: %f\n", timer);
 							}
+							// Merge files
 							else if (!strncmp(buffer, "merge", 5)) {
 								merge_files(2, "./file2");
 							}
+							// Reset the processing timer
 							else if (!strncmp(buffer, "reset", 5)) {
 								timer = 0;
 							} 
+							// Send input to leech and seed
 							else {
 								send(leech, buffer, strlen(buffer), 0);
 								send(new_sock, buffer, strlen(buffer), 0);
 							}
 						}
 					}
-					// SEED
+					// Seed
 					else if (i == leech) {
 						if ((status = read(i, buffer, 1024)) > 0) {
+							// Retrieve flag message from seed to not send data to leech peer
 							if (!strncmp(buffer, "NOSPLIT_FLAG", 12)) {
 								flag = 1;
 								printf("No split flag = ON\n");
@@ -102,7 +117,7 @@ int main (int argc, char **argv) {
 							}
 						}
 					}
-					// LEECH
+					// Leech
 					else if (i == new_sock) {
 						if ((status = read(i, buffer, 1024)) > 0) {
 							out_file = fopen("./file2/f0.txt", "a");
@@ -126,6 +141,7 @@ int main (int argc, char **argv) {
 
 	close(seed);
 	close(leech);
+	close(new_sock);
 
 	return 0;
 }
