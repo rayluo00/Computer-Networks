@@ -61,9 +61,7 @@ int main (int argc, char **argv) {
     }
 
     printf("Creating IGMP socket...DONE.\n");
-    recv(igmp_sd, buf, buf_len, 0);
-    printf("RECV: %s\n", buf);
-
+    
     // TCP/IP
     sd = create_client(argv[1], atoi(argv[3]));
 
@@ -92,7 +90,7 @@ int main (int argc, char **argv) {
                 }
                 else if (i == igmp_sd) {
                     if (read(i, buf, buf_len) > 0) {
-                        printf("GROUP: %s\n", buf);
+                        printf("%s\n", buf);
                     }
                 }
             }
