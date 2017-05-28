@@ -90,7 +90,7 @@ int main (int argc, char **argv) {
                 }
                 else if (i == igmp_sd) {
                     if (read(i, buf, buf_len) > 0) {
-                        printf("GROUP: %s\n", buf);
+                        printf("%s\n", buf);
                     }
                 }
             }
