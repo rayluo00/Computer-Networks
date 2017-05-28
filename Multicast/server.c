@@ -12,11 +12,25 @@
 
 #define GROUP_ADDR "239.46.7.13"
 
-const char
+void print_maze(char **maze);
+
+const char MAZE[10][10] = {{'_','_','_','_','_','_','_','_','_','_'}, 
+                           {'S',' ',' ',' ',' ',' ','|',' ',' ','|'}, 
+                           {'|','_','_','_',' ','_','_','_',' ','|'}, 
+                           {'|',' ',' ','|',' ',' ',' ','|',' ','|'}, 
+                           {'|',' ','_','|',' ','_','_','|',' ','|'},
+                           {'|',' ','|',' ',' ',' ',' ',' ',' ','|'}, 
+                           {'|',' ','|','_','_',' ','|',' ',' ','|'}, 
+                           {'|',' ','|',' ','|',' ','|','_',' ','|'}, 
+                           {'|',' ',' ',' ',' ',' ','|',' ',' ','E'}, 
+                           {'_','_','_','_','_','_','_','_','_','_'}};
 
 int main (int argc, char **argv)
 {
     char buf[1024];
+    char player1 = '1';
+    char player2 = '2';
+    char *maze = (char *)malloc(1000 * sizeof(char));;
     int igmp_sd, i, tcp_sd, tcp_sd2, sd, sd2, size;
     int buf_len = sizeof(buf);
     struct in_addr local_interface;
@@ -50,10 +64,6 @@ int main (int argc, char **argv)
     }
 
     printf("Create IGMP socket...DONE.\n");
-
-    snprintf(buf, buf_len, "SERVER_SENDTO_MSG");
-    sendto(igmp_sd, buf, buf_len, 0, (struct sockaddr *)&group_sock,
-            sizeof(group_sock));
 
     // TPC/IP
     tcp_sd = create_server(atoi(argv[3]));
@@ -90,11 +100,17 @@ int main (int argc, char **argv)
                 if (FD_ISSET(i, &read_set)) {
                     if (i == 0) {
                         if (read(0, buf, 1024) > 0) {
-                            sendto(igmp_sd, buf, buf_len, 0, 
+                            if (!strncmp(buf, "print", 5)) {
+                                print_maze(&maze);
+                                sendto(igmp_sd, maze, sizeof(maze), 0,
                                       (struct sockaddr *)&group_sock,
-                                      sizeof(group_sock));
-                            send(sd, buf, buf_len, 0);
-                            printf("SEND: %s\n", buf);
+                                       sizeof(group_sock));
+                            } else {
+                                sendto(igmp_sd, buf, buf_len, 0, 
+                                          (struct sockaddr *)&group_sock,
+                                          sizeof(group_sock));
+                                //printf("SEND: %s\n", buf);
+                            }
                         }
                     }
                     else if (i == sd) {
@@ -121,3 +137,19 @@ int main (int argc, char **argv)
     return 0;
 }
 
+void print_maze (char **maze_str)
+{
+    int k = 0;
+    //char maze_str[1000];
+
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
+            printf("%c ", MAZE[i][j]);
+            (*maze_str)[k++] = MAZE[i][j];
+        }
+        printf("\n");
+        (*maze_str)[k++] = '\n';
+    }
+
+    printf("\n\n%s\n", *maze_str);
+}
