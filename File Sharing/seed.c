@@ -1,3 +1,15 @@
+/********************************************************************
+ * seed.c
+ *
+ * Author: Raymond Weiming Luo
+ *
+ * Set up seed server-side connection in the P2P model to distrubute
+ * the text document to the leech and stream. The document is split
+ * in half and each half is sent to their respective peer. Performance
+ * is computed using clock(3).
+ *
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -25,14 +37,17 @@ int main (int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
+	// Remove any files used in temp directories to hold peices.
 	system("exec rm -r ./tmp/*");
 	system("exec rm -f ./file1/*");
 	system("exec rm -f ./file2/*");
 	printf("Cleaned up txt files.\n");
 
+	// Establish TCP connection
 	sock = create_seed_socket(atoi(argv[2]));
 	sock2 = create_seed_socket(atoi(argv[3]));
 
+	// Set active file descriptors
 	FD_ZERO(&active_fd_set);
 	FD_SET(0, &active_fd_set);
 	FD_SET(sock, &active_fd_set);
@@ -67,6 +82,7 @@ int main (int argc, char **argv)
 					// Keyboard input
 					if (i == 0) {
 						if (read(0, buffer, 1024) > 0) {
+							// Quit the program
 							if (!strncmp(buffer, "q", 1)) {
 								printf("Quitting program.\n");
 								close(sock);
@@ -75,6 +91,7 @@ int main (int argc, char **argv)
 								close(new_sock2);
 								exit(EXIT_SUCCESS);
 							}
+							// Split the text file and send prices to peers
 							else if (!strncmp(buffer, "split", 5)) {
 								split_file(argc, argv);
 								printf("Splitting done.\n");
@@ -101,14 +118,16 @@ int main (int argc, char **argv)
 
 								printf("Time elapsed: %f\n", timer);
 							}
+							// Don't split the text file and send individual copies to peers
 							else if (!strncmp(buffer, "nosplit", 7)) {
+								// Send acknowledgment flag to peers to not send missing peices
 								snprintf(buffer, 1024, "NOSPLIT_FLAG");
 								send(new_sock, buffer, sizeof(buffer), 0);
 								send(new_sock2, buffer, sizeof(buffer), 0);
 								memset(buffer, 0, 1024);
 
+								// Send text file to stream
 								FILE *txt_file = fopen(argv[1], "r");
-
 								timer = 0;
 								start = clock();
 								while (fgets(buffer, 1024, txt_file) != NULL) {
@@ -118,9 +137,10 @@ int main (int argc, char **argv)
 								timer += ((double) (end - start)) / CLOCKS_PER_SEC;
 								fclose(txt_file);
 
+								// Send text file to leech
 								memset(buffer, 0, 1024);
 								txt_file = fopen(argv[1], "r");
-								start = clock();
+								start = clock();	
 								while (fgets(buffer, 1024, txt_file) != NULL) {
 									send(new_sock2, buffer, sizeof(buffer), 0);
 								}
@@ -130,23 +150,28 @@ int main (int argc, char **argv)
 
 								printf("Time elapsed: %f\n", timer);
 							}
+							// Display processing time
 							else if (!strncmp(buffer, "time", 4)) {
 								printf("Time: %f\n", timer);
 							}
+							// Reset processing time
 							else if (!strncmp(buffer, "reset", 5)) {
 								timer = 0;
-							} 
+							}
+							// Send input to both peers 
 							else {
 								send(new_sock, buffer, strlen(buffer), 0);
 								send(new_sock2, buffer, strlen(buffer), 0);
 							}
 						}
 					}
+					// Stream
 					else if (i == new_sock) {
 						if ((status = read(i, buffer, 1024)) > 0) {
 							printf("STREAM: %s", buffer);
 						}
 					}
+					// Leech
 					else if (i == new_sock2) {
 						if ((status = read(i, buffer, 1024)) > 0) {
 							printf("LEECH: %s", buffer);
@@ -165,6 +190,8 @@ int main (int argc, char **argv)
 
 	close(sock);
 	close(sock2);
+	close(new_sock);
+	close(new_sock2);
 
 	return 0;
 }

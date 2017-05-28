@@ -1,3 +1,15 @@
+/********************************************************************
+ * leech.c
+ *
+ * Author: Raymond Weiming Luo
+ *
+ * Leech-side peer of file sharing P2P model, retrieve half of the
+ * text document from the seed while simultaneously sending it to
+ * the another peer (stream). Then retrieve the missing half of text
+ * from the stream. Computes the time performance using clock(3).
+ *
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,6 +24,12 @@
 #define LEECH_FILE = "./file1/f1.txt";
 #define PORT 46713
 
+/********************************************************************
+ * Main function to set socket connections to P2P and retrieve input
+ * data from both the seed and stream side. Send the text data to the
+ * stream when recieved and get the missing peice of text from the 
+ * stream. Merge both pieces together to get the full text document.
+ */
 int main (int argc, char **argv)
 {
 	if (argc < 2) {
@@ -51,28 +69,33 @@ int main (int argc, char **argv)
 				// Keyboard input
 				if (i == 0) {
 					if (read(0, buffer, 1024) > 0) {
+						// Quit program
 						if (!strncmp(buffer, "q", 1)) {
 							printf("Quitting program.\n");
 							close(sock);
 							close(sock2);
 							exit(EXIT_SUCCESS);
 						}
+						// Display processing time
 						else if (!(strncmp(buffer, "time", 4))) {
 							printf("Time elapsed: %f\n", timer);
 						}
+						// Merge peices to one file
 						else if (!(strncmp(buffer, "merge", 5))) {
 							merge_files(2, "./file1");
 						}
+						// Reset processing timer
 						else if (!strncmp(buffer, "reset", 5)) {
 							timer = 0;
 						} 
+						// Send input to peers
 						else {
 							send(sock, buffer, strlen(buffer), 0);
 							send(sock2, buffer, strlen(buffer), 0);
 						}
 					}
 				}
-				// STREAM
+				// Stream
 				else if (i == sock) {
 					if ((status = read(i, buffer, 1024)) > 0) {
 						out_file = fopen("./file1/f1.txt", "a");
@@ -83,7 +106,7 @@ int main (int argc, char **argv)
 						fclose(out_file);
 					}
 				}
-				// SEED
+				// Seed
 				else if (i == sock2) {
 					if ((status = read(i, buffer, 1024)) > 0) {
 						if (!strncmp(buffer, "NOSPLIT_FLAG", 12)) {
@@ -97,6 +120,7 @@ int main (int argc, char **argv)
 							timer += ((double) (end - start)) / CLOCKS_PER_SEC;
 							fclose(out_file);
 							
+							// Only send data to stream if flag is not given
 							if (!flag) {
 								send(sock, buffer, strlen(buffer), 0);	
 							}
