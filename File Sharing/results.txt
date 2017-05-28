@@ -1,3 +1,84 @@
-LEECH : 
-STREAM: 
-SEED  : 
+SPLIT TEST
+Seed: 2.669067
+Leech: 11.496829
+Stream: 11.664488
+ 
+Seed: 2.610617
+Leech: 11.480965
+Stream: 11.288900
+ 
+Seed: 2.646587
+Leech: 11.437687
+Stream: 11.545929
+ 
+Seed: 2.617560
+Leech: 11.445798
+Stream: 11.308452
+ 
+Seed: 2.638696
+Leech: 11.406949
+Stream: 11.393433
+ 
+Seed: 2.675029
+Leech: 11.317950
+Stream: 11.424899
+ 
+Seed: 2.617536
+Leech: 11.381236
+Stream: 11.392594
+ 
+Seed: 2.580711
+Leech: 11.331730
+Stream: 11.308230
+ 
+Seed: 2.656070
+Leech: 11.563828
+Stream: 11.536210
+ 
+Seed: 2.675847
+Leech: 11.693628
+Stream: 11.639181
+ 
+ 
+ 
+NON-SPLIT TEST
+Seed: 5.527949
+Leech: 10.363478
+Stream: 10.429046
+ 
+Seed: 5.477258
+Leech: 10.377562
+Stream: 10.384669
+ 
+Seed: 5.277639
+Leech: 10.195001
+Stream: 10.215617
+ 
+Seed: 5.241431
+Leech: 10.115450 
+Stream: 9.909773
+ 
+Seed: 5.100621
+Leech: 9.788645
+Stream: 9.937004
+ 
+Seed: 5.265091
+Leech: 9.982257
+Stream: 10.391075
+ 
+Seed: 5.317582
+Leech: 10.191763
+Stream: 10.341788
+ 
+Seed: 5.253896
+Leech: 10.027169
+Stream: 10.277517
+ 
+Seed: 5.261509
+Leech: 9.969975
+Stream: 10.229686
+ 
+Seed: 5.385918
+Leech: 10.098452
+Stream: 10.453342
+ 
