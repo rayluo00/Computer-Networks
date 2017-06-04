@@ -19,6 +19,7 @@
 #include <netinet/in.h>
 #include <netdb.h> 
 #include <time.h>
+#include <unistd.h>
 #include "network.h"
 
 #define STREAM_FILE = "./file3/f3.txt";

@@ -94,7 +94,7 @@ int create_seed_socket (int port)
 	sock_info.sin_port = htons((u_short)port);
 
 	if (((long int)(protocol_table_ptr = getprotobyname("tcp"))) == 0) {
-		fprintf(stderr, "");
+		fprintf(stderr, "error: Unable to set TCP protocol.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -178,7 +178,7 @@ void split_file (int argc, char **argv)
 	split_size = ceil(txt_stats.st_size / leechers);
 	segment = open_split_file(split_count++);
 
-	printf("FILE: %d | SEGMENT: %d\n", txt_stats.st_size, split_size);
+	printf("FILE: %d | SEGMENT: %d\n", (int) txt_stats.st_size, split_size);
 
 	// Split the files according to the calculated size of each peice
 	while ((ch = fgetc(txt_file)) != EOF) {
