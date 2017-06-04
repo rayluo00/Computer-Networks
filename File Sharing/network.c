@@ -23,7 +23,6 @@
 /********************************************************************
  * Create a client TCP socket connection. Return the socket descriptor
  * to the original caller.
- *
  */
 int create_leech_socket (char *hostname, int port)
 {
@@ -78,7 +77,6 @@ int create_leech_socket (char *hostname, int port)
  * Create a TCP socket connection with the peers for file sharing.
  * Returns the socket descriptor once a connection has been 
  * esatblished.
- *
  */
 int create_seed_socket (int port)
 {
@@ -129,7 +127,6 @@ int create_seed_socket (int port)
 
 /********************************************************************
  * Open one of the file peices based on the id of the file peice.
- *
  */
 FILE *open_split_file (int split_count)
 {
@@ -151,7 +148,6 @@ FILE *open_split_file (int split_count)
  * Given a file, split it to N number of peices. Where N is the 
  * number of peers connecting to the seed. Currently, N is statically
  * set to 2 for only 2 peers.
- *
  */
 void split_file (int argc, char **argv) 
 {
@@ -200,7 +196,6 @@ void split_file (int argc, char **argv)
  * Merge the files given a path name to the file peices. Merges all
  * the text files into a new file within the given path called
  * 'merge.txt'.
- *
  */
 void merge_files (int user_count, char *file_path)
 {

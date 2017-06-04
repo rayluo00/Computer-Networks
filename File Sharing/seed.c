@@ -24,6 +24,11 @@
 #define SEED_FILE = "./file2/f2.txt";
 #define PORT 46713
 
+/********************************************************************
+ * Main function to establish two client socket connections. Send 
+ * data either as full copies of the text file or different split
+ * files for each socket connection.
+ */
 int main (int argc, char **argv)
 {
 	int i, size, new_sock, new_sock2, sock, sock2, status;

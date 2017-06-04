@@ -24,6 +24,11 @@
 
 #define STREAM_FILE = "./file3/f3.txt";
 
+/********************************************************************
+ * Main function to connect onto a client and server TCP connection.
+ * Send data is recieved from the server-side. Otherwise write data
+ * into a file from the client side.
+ */
 int main (int argc, char **argv) {
 	int i, size, seed, leech, status, new_sock;
 	int flag = 0;
