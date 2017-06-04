@@ -80,6 +80,7 @@ int main (int argc, char **argv)
 						// Display processing time
 						else if (!(strncmp(buffer, "time", 4))) {
 							printf("Time elapsed: %f\n", timer);
+							timer = 0;
 						}
 						// Merge peices to one file
 						else if (!(strncmp(buffer, "merge", 5))) {
